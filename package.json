@@ -1,0 +1,17 @@
+{
+  "name": "wallhub",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Premium wallpaper PWA platform",
+  "scripts": {
+    "dev": "pnpm --filter @wallhub/web dev",
+    "dev:backend": "pnpm --filter @wallhub/backend dev",
+    "dev:all": "pnpm run --parallel dev dev:backend",
+    "build": "pnpm --filter @wallhub/web build && pnpm --filter @wallhub/backend build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

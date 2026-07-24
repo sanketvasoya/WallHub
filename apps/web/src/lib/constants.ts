@@ -1,0 +1,17 @@
+export const TRENDING_SEARCHES = [
+  "mountains",
+  "space",
+  "nature",
+  "cyberpunk",
+  "minimal",
+  "anime",
+  "sunset",
+  "ocean",
+  "forest",
+  "dark",
+  "neon",
+  "galaxy",
+  "city",
+  "abstract",
+  "amoled",
+];
