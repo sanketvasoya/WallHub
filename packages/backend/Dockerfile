@@ -22,4 +22,4 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 USER fastify
 EXPOSE 3001
-CMD ["node", "dist/index.js"]
+CMD ["node", "--import", "tsx/esm", "dist/index.js"]
