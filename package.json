@@ -7,7 +7,7 @@
     "dev": "pnpm --filter @wallhub/web dev",
     "dev:backend": "pnpm --filter @wallhub/backend dev",
     "dev:all": "pnpm run --parallel dev dev:backend",
-    "build": "pnpm --filter @wallhub/web build && pnpm --filter @wallhub/backend build",
+    "build": "pnpm --filter @wallhub/web build",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck"
   },
