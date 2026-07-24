@@ -90,52 +90,38 @@ img {
 }
 
 .masonry-grid {
-  columns: 2;
-  column-gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
   padding: 0 8px;
 }
 
 @media (min-width: 600px) {
   .masonry-grid {
-    columns: 3;
-    column-gap: 12px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
     padding: 0 12px;
   }
 }
 
 @media (min-width: 900px) {
   .masonry-grid {
-    columns: 4;
-    column-gap: 16px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
     padding: 0 16px;
   }
 }
 
 @media (min-width: 1200px) {
   .masonry-grid {
-    columns: 5;
-    column-gap: 16px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
     padding: 0 20px;
   }
 }
 
 .masonry-item {
-  break-inside: avoid;
-  margin-bottom: 8px;
-  display: inline-block;
-  width: 100%;
-}
-
-@media (min-width: 600px) {
-  .masonry-item {
-    margin-bottom: 12px;
-  }
-}
-
-@media (min-width: 900px) {
-  .masonry-item {
-    margin-bottom: 16px;
-  }
+  min-width: 0;
 }
 
 .glass-panel {
