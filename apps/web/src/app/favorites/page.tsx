@@ -32,7 +32,9 @@ function FavoritesContent() {
         </Box>
       </Box>
 
-      {count === 0 ? (
+      {isLoading ? (
+        <LoadingSkeleton count={8} />
+      ) : count === 0 ? (
         <Box
           sx={{
             display: "flex",
@@ -76,8 +78,6 @@ function FavoritesContent() {
             Explore Wallpapers
           </Button>
         </Box>
-      ) : isLoading ? (
-        <LoadingSkeleton count={8} />
       ) : isError ? (
         <ErrorState message="Failed to load favorites" onRetry={() => window.location.reload()} />
       ) : wallpapers.length === 0 ? (

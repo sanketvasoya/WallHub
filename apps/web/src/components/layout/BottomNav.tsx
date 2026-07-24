@@ -12,7 +12,7 @@ export default function BottomNav() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const currentValue = navItems.findIndex((item) => isActive(item.href, pathname));
+  const matchIndex = navItems.findIndex((item) => isActive(item.href, pathname));
 
   if (!isMobile) return null;
 
@@ -42,7 +42,7 @@ export default function BottomNav() {
     >
       <BottomNavigation
         showLabels
-        value={Math.max(0, currentValue)}
+        value={matchIndex === -1 ? undefined : matchIndex}
         onChange={(_, newValue) => {
           router.push(navItems[newValue]?.href || "/");
         }}

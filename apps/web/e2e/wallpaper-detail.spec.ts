@@ -1,15 +1,17 @@
 import { test, expect } from "@playwright/test";
 
+const WORKING_ID = "8g9vjk";
+
 test.describe("Wallpaper Detail Page", () => {
   test("loads wallpaper detail with action buttons", async ({ page }) => {
-    await page.goto("/wallpaper/xedg6l", { waitUntil: "networkidle" });
+    await page.goto(`/wallpaper/${WORKING_ID}`, { waitUntil: "networkidle" });
     await page.waitForTimeout(2000);
     const backBtn = page.locator('button:has(svg[data-testid="ArrowBackIcon"])').first();
     await expect(backBtn).toBeVisible({ timeout: 10000 });
   });
 
   test("top bar has action buttons", async ({ page }) => {
-    await page.goto("/wallpaper/xedg6l", { waitUntil: "networkidle" });
+    await page.goto(`/wallpaper/${WORKING_ID}`, { waitUntil: "networkidle" });
     await page.waitForTimeout(2000);
     const backBtn = page.locator('button:has(svg[data-testid="ArrowBackIcon"])').first();
     await expect(backBtn).toBeVisible({ timeout: 5000 });
@@ -32,11 +34,11 @@ test.describe("Wallpaper Detail Page", () => {
     const backBtn = page.locator('button:has(svg[data-testid="ArrowBackIcon"])').first();
     await backBtn.click();
     await page.waitForTimeout(1000);
-    expect(page.url()).not.toContain("/wallpaper/xedg6l");
+    expect(page.url()).not.toContain(`/wallpaper/${WORKING_ID}`);
   });
 
   test("favorite toggle works", async ({ page }) => {
-    await page.goto("/wallpaper/xedg6l", { waitUntil: "networkidle" });
+    await page.goto(`/wallpaper/${WORKING_ID}`, { waitUntil: "networkidle" });
     await page.waitForTimeout(2000);
     const favBtn = page.locator('button:has(svg[data-testid="FavoriteBorderIcon"]), button:has(svg[data-testid="FavoriteIcon"])').first();
     await favBtn.click();
@@ -46,7 +48,7 @@ test.describe("Wallpaper Detail Page", () => {
   });
 
   test("info toggle shows wallpaper details panel", async ({ page }) => {
-    await page.goto("/wallpaper/xedg6l", { waitUntil: "networkidle" });
+    await page.goto(`/wallpaper/${WORKING_ID}`, { waitUntil: "networkidle" });
     await page.waitForTimeout(2000);
     const infoBtn = page.locator('button:has(svg[data-testid="InfoIcon"])').first();
     await infoBtn.click();
@@ -57,15 +59,15 @@ test.describe("Wallpaper Detail Page", () => {
 
   test("keyboard shortcut Escape goes back", async ({ page }) => {
     await page.goto("/category/trending", { waitUntil: "networkidle" });
-    await page.goto("/wallpaper/xedg6l", { waitUntil: "networkidle" });
+    await page.goto(`/wallpaper/${WORKING_ID}`, { waitUntil: "networkidle" });
     await page.waitForTimeout(2000);
     await page.keyboard.press("Escape");
     await page.waitForTimeout(1000);
-    expect(page.url()).not.toContain("/wallpaper/xedg6l");
+    expect(page.url()).not.toContain(`/wallpaper/${WORKING_ID}`);
   });
 
   test("keyboard shortcut F toggles favorite", async ({ page }) => {
-    await page.goto("/wallpaper/xedg6l", { waitUntil: "networkidle" });
+    await page.goto(`/wallpaper/${WORKING_ID}`, { waitUntil: "networkidle" });
     await page.waitForTimeout(2000);
     const favBtnBefore = page.locator('button:has(svg[data-testid="FavoriteBorderIcon"]), button:has(svg[data-testid="FavoriteIcon"])').first();
     await expect(favBtnBefore).toBeVisible();

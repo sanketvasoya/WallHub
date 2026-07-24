@@ -93,7 +93,7 @@ export const BLOCKED_KEYWORDS: string[] = [
   "cumshot",
   "creampie",
   "facial",
-  " gangbang",
+  "gangbang",
   "threesome",
   "orgy",
   "swinger",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import {
   Box,
   IconButton,
@@ -29,6 +29,7 @@ function formatUpvotes(n: number): string {
 }
 
 export default function WallpaperCard({ wallpaper, index = 0 }: WallpaperCardProps) {
+  const [imgError, setImgError] = useState(false);
   const { isFavorite, handleDownload, handleShare, handleToggleFavorite } = useWallpaperActions(wallpaper);
 
   const handleFavorite = useCallback(
@@ -57,6 +58,8 @@ export default function WallpaperCard({ wallpaper, index = 0 }: WallpaperCardPro
     },
     [handleShare]
   );
+
+  if (imgError) return null;
 
   const delay = Math.min(index * 0.04, 0.6);
 
@@ -99,6 +102,7 @@ export default function WallpaperCard({ wallpaper, index = 0 }: WallpaperCardPro
             alt={wallpaper.title}
             loading="lazy"
             className="wallpaper-img"
+            onError={() => setImgError(true)}
             sx={{
               width: "100%",
               display: "block",

@@ -9,14 +9,15 @@ export interface ValidationResult {
 
 export function validateWallpaper(wallpaper: Wallpaper): ValidationResult {
   const titleLower = wallpaper.title.toLowerCase();
-  const tagsLower = wallpaper.subreddit.toLowerCase();
+  const tagsLower = wallpaper.tags.map((t) => t.toLowerCase()).join(" ");
+  const combinedLower = `${tagsLower} ${wallpaper.subreddit.toLowerCase()}`;
 
   for (const keyword of BLOCKED_KEYWORDS) {
     if (titleLower.includes(keyword.toLowerCase())) {
       logRejection({
         wallpaperId: wallpaper.id,
         title: wallpaper.title,
-        tags: [wallpaper.subreddit],
+        tags: wallpaper.tags,
         reason: `Title contains blocked keyword: "${keyword}"`,
         timestamp: new Date().toISOString(),
       });
@@ -28,17 +29,17 @@ export function validateWallpaper(wallpaper: Wallpaper): ValidationResult {
   }
 
   for (const keyword of BLOCKED_KEYWORDS) {
-    if (tagsLower.includes(keyword.toLowerCase())) {
+    if (combinedLower.includes(keyword.toLowerCase())) {
       logRejection({
         wallpaperId: wallpaper.id,
         title: wallpaper.title,
-        tags: [wallpaper.subreddit],
-        reason: `Tags contain blocked keyword: "${keyword}"`,
+        tags: wallpaper.tags,
+        reason: `Tags/subreddit contain blocked keyword: "${keyword}"`,
         timestamp: new Date().toISOString(),
       });
       return {
         isValid: false,
-        reason: `Tags contain blocked keyword: "${keyword}"`,
+        reason: `Tags/subreddit contain blocked keyword: "${keyword}"`,
       };
     }
   }

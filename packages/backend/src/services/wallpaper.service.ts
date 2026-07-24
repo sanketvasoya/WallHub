@@ -97,20 +97,30 @@ export async function getSimilarWallpapers(
 
   try {
     const wallpaper = await getWallpaperById(id);
-    const searchTerms = wallpaper.tags.slice(0, 3).join(" ");
+    const allTags = wallpaper.tags.join(" ");
     const categories = wallpaper.subreddit === "Anime" ? "010" : "110";
 
-    const result = await searchWallhaven(searchTerms, categories, "relevance", page);
-    const transformed = result.data
+    const tagResult = await searchWallhaven(allTags, categories, "relevance", page);
+    let candidates = tagResult.data
       .map(transformWallhavenImage)
       .filter((w) => w.id !== id);
-    const wallpapers = validateWallpapers(transformed);
+    let wallpapers = validateWallpapers(candidates);
+
+    if (wallpapers.length < 16) {
+      const categoryQuery = wallpaper.subreddit.toLowerCase();
+      const categoryResult = await searchWallhaven(categoryQuery, categories, "relevance", page);
+      const seen = new Set(candidates.map((w) => w.id));
+      const extra = categoryResult.data
+        .map(transformWallhavenImage)
+        .filter((w) => w.id !== id && !seen.has(w.id));
+      wallpapers = wallpapers.concat(validateWallpapers(extra));
+    }
 
     const response = {
-      wallpapers: wallpapers.slice(0, 24),
+      wallpapers: wallpapers.slice(0, 16),
       page,
-      totalResults: result.meta.total,
-      lastPage: result.meta.last_page,
+      totalResults: tagResult.meta.total,
+      lastPage: tagResult.meta.last_page,
     };
 
     cacheSet(cacheKey, response, CACHE_TTL.SHORT);

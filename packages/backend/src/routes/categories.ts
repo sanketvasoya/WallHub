@@ -6,6 +6,12 @@ export async function categoryRoutes(app: FastifyInstance): Promise<void> {
     return { categories: CATEGORIES };
   });
 
+  app.get("/categories/search", async (request) => {
+    const { q } = request.query as { q: string };
+    if (!q) return { categories: CATEGORIES };
+    return { categories: searchCategories(q) };
+  });
+
   app.get("/categories/:slug", async (request, reply) => {
     const { slug } = request.params as { slug: string };
     const category = getCategoryBySlug(slug);
@@ -13,11 +19,5 @@ export async function categoryRoutes(app: FastifyInstance): Promise<void> {
       return reply.status(404).send({ error: "Category not found" });
     }
     return { category };
-  });
-
-  app.get("/categories/search", async (request) => {
-    const { q } = request.query as { q: string };
-    if (!q) return { categories: CATEGORIES };
-    return { categories: searchCategories(q) };
   });
 }

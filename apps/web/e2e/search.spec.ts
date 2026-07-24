@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Search Page", () => {
   test("loads with search input and trending chips", async ({ page }) => {
     await page.goto("/search", { waitUntil: "networkidle" });
-    const searchInput = page.getByPlaceholder("Search wallpapers...");
+    const searchInput = page.getByPlaceholder("Search wallpapers...").last();
     await expect(searchInput).toBeVisible({ timeout: 15000 });
     await expect(page.getByText("Trending")).toBeVisible({ timeout: 10000 });
     await expect(page.getByRole("button", { name: "mountains" })).toBeVisible();
@@ -11,7 +11,7 @@ test.describe("Search Page", () => {
 
   test("search input accepts text", async ({ page }) => {
     await page.goto("/search", { waitUntil: "networkidle" });
-    const searchInput = page.getByPlaceholder("Search wallpapers...");
+    const searchInput = page.getByPlaceholder("Search wallpapers...").last();
     await searchInput.fill("nature");
     await expect(searchInput).toHaveValue("nature");
   });
@@ -27,7 +27,7 @@ test.describe("Search Page", () => {
 
   test("submitting search form shows results", async ({ page }) => {
     await page.goto("/search", { waitUntil: "networkidle" });
-    const searchInput = page.getByPlaceholder("Search wallpapers...");
+    const searchInput = page.getByPlaceholder("Search wallpapers...").last();
     await searchInput.fill("space");
     await searchInput.press("Enter");
     await page.waitForTimeout(5000);

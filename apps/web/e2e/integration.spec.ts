@@ -28,7 +28,7 @@ test.describe("Full App Navigation Flow", () => {
     await removeNextjsPortal(page);
     await page.getByRole("button", { name: "Home" }).click({ force: true });
     await page.waitForTimeout(2000);
-    await expect(page.getByText("Discover Wallpapers")).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole("heading", { name: "Discover Wallpapers" })).toBeVisible({ timeout: 10000 });
   });
 
   test("search > view wallpaper > favorite > check favorites", async ({ page }) => {

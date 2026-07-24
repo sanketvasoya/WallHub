@@ -1,12 +1,13 @@
 "use client";
 
-import { useQuery, useInfiniteQuery, useQueries } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, keepPreviousData } from "@tanstack/react-query";
 import {
   fetchCategories,
   fetchCategory,
   fetchWallpapers,
   fetchWallpaper,
   fetchSimilarWallpapers,
+  fetchWallpapersBatch,
   searchWallpapers,
 } from "@/lib/api/client";
 
@@ -36,6 +37,7 @@ export function useWallpapers(category: string, sort: string = "hot") {
     },
     initialPageParam: 1,
     staleTime: 2 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -50,7 +52,7 @@ export function useWallpaper(id: string) {
 export function useSimilarWallpapers(id: string) {
   return useInfiniteQuery({
     queryKey: ["similar", id],
-    queryFn: ({ pageParam = 1 }) => fetchSimilarWallpapers(id, pageParam),
+    queryFn: ({ pageParam = 1 }) => fetchSimilarWallpapers(id, pageParam, 16),
     getNextPageParam: (lastPage) => {
       if (lastPage.page >= lastPage.lastPage) return undefined;
       return lastPage.page + 1;
@@ -71,21 +73,16 @@ export function useSearch(query: string, sort: string = "relevance") {
 }
 
 export function useFavoriteWallpapers(ids: string[]) {
-  const results = useQueries({
-    queries: ids.map((id) => ({
-      queryKey: ["wallpaper", id],
-      queryFn: () => fetchWallpaper(id),
-      enabled: !!id,
-      staleTime: 60 * 60 * 1000,
-    })),
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["favorites-batch", ids],
+    queryFn: () => fetchWallpapersBatch(ids),
+    enabled: ids.length > 0,
+    staleTime: 60 * 60 * 1000,
   });
 
-  const wallpapers = results
-    .filter((r) => r.isSuccess && r.data)
-    .map((r) => r.data!);
-
-  const isLoading = results.some((r) => r.isLoading);
-  const isError = results.some((r) => r.isError);
-
-  return { wallpapers, isLoading, isError };
+  return {
+    wallpapers: data?.wallpapers ?? [],
+    isLoading,
+    isError,
+  };
 }

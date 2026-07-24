@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 
+const WORKING_ID = "8g9vjk";
+
 test.describe("Downloads", () => {
   test("wallpaper cards have action buttons", async ({ page }) => {
     await page.goto("/", { waitUntil: "networkidle" });
@@ -11,14 +13,14 @@ test.describe("Downloads", () => {
   });
 
   test("wallpaper detail page has download button", async ({ page }) => {
-    await page.goto("/wallpaper/xedg6l", { waitUntil: "networkidle" });
+    await page.goto(`/wallpaper/${WORKING_ID}`, { waitUntil: "networkidle" });
     await page.waitForTimeout(2000);
     const downloadBtn = page.locator('button:has(svg[data-testid="DownloadIcon"])').first();
     await expect(downloadBtn).toBeVisible({ timeout: 5000 });
   });
 
   test("info panel has download chip", async ({ page }) => {
-    await page.goto("/wallpaper/xedg6l", { waitUntil: "networkidle" });
+    await page.goto(`/wallpaper/${WORKING_ID}`, { waitUntil: "networkidle" });
     await page.waitForTimeout(2000);
     const infoBtn = page.locator('button:has(svg[data-testid="InfoIcon"])').first();
     await infoBtn.click();
@@ -28,7 +30,7 @@ test.describe("Downloads", () => {
   });
 
   test("info panel has open original chip", async ({ page }) => {
-    await page.goto("/wallpaper/xedg6l", { waitUntil: "networkidle" });
+    await page.goto(`/wallpaper/${WORKING_ID}`, { waitUntil: "networkidle" });
     await page.waitForTimeout(2000);
     const infoBtn = page.locator('button:has(svg[data-testid="InfoIcon"])').first();
     await infoBtn.click();

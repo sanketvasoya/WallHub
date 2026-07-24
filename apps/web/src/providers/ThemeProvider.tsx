@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from "react";
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { useSettingsStore } from "@/lib/stores";
@@ -13,9 +13,16 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue>({ resolved: "dark" });
 export const useResolvedTheme = () => useContext(ThemeContext);
 
+function getInitialMode(): "light" | "dark" {
+  if (typeof window === "undefined") return "dark";
+  const stored = useSettingsStore.getState().theme;
+  if (stored === "light" || stored === "dark") return stored;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const mode = useSettingsStore((s) => s.theme);
-  const [resolved, setResolved] = useState<"light" | "dark">("dark");
+  const [resolved, setResolved] = useState<"light" | "dark">(getInitialMode);
 
   useEffect(() => {
     if (mode === "system") {
@@ -28,7 +35,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setResolved(mode);
   }, [mode]);
 
-  const theme = getTheme(resolved);
+  const theme = useMemo(() => getTheme(resolved), [resolved]);
 
   return (
     <ThemeContext.Provider value={{ resolved }}>

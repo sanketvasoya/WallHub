@@ -36,6 +36,15 @@ await app.register(rateLimit, {
 
 await app.register(compress);
 
+app.get("/", async () => {
+  return {
+    name: "WallHub API",
+    version: "1.0.0",
+    status: "running",
+    timestamp: new Date().toISOString(),
+  };
+});
+
 app.get("/health", async () => {
   return { status: "ok", timestamp: new Date().toISOString() };
 });
