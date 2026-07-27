@@ -1,6 +1,6 @@
-import { getRedis } from "../config/redis";
-import { CACHE_TTL } from "../config/cache";
-import { logInfo } from "../utils/logger";
+import { getRedis } from "../config/redis.js";
+import { CACHE_TTL } from "../config/cache.js";
+import { logInfo } from "../utils/logger.js";
 
 interface CacheEntry<T> {
   value: T;

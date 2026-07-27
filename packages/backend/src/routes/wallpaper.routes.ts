@@ -6,7 +6,7 @@ import {
   getSimilar,
   search,
   getTrendingSearches,
-} from "../controllers/wallpaper.controller";
+} from "../controllers/wallpaper.controller.js";
 
 export async function wallpaperRoutes(app: FastifyInstance): Promise<void> {
   app.get("/wallpapers", getWallpapers);

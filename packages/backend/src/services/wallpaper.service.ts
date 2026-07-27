@@ -1,13 +1,13 @@
-import type { Wallpaper } from "../types/index";
+import type { Wallpaper } from "../types/index.js";
 import {
   searchWallhaven,
   getWallhavenWallpaper,
   transformWallhavenImage,
-} from "./wallhaven.service";
-import { cacheGet, cacheSet } from "./cache.service";
-import { validateWallpapers, validateWallpaper } from "./validation.service";
-import { CACHE_TTL } from "../config/cache";
-import { logInfo, logError } from "../utils/logger";
+} from "./wallhaven.service.js";
+import { cacheGet, cacheSet } from "./cache.service.js";
+import { validateWallpapers, validateWallpaper } from "./validation.service.js";
+import { CACHE_TTL } from "../config/cache.js";
+import { logInfo, logError } from "../utils/logger.js";
 
 function mapSortParam(sort: string): { sorting: string; topRange?: string } {
   if (sort === "hot") return { sorting: "toplist", topRange: "1w" };

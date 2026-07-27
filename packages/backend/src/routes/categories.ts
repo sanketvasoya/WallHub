@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { CATEGORIES, getCategoryBySlug, searchCategories } from "../config/categories";
+import { CATEGORIES, getCategoryBySlug, searchCategories } from "../config/categories.js";
 
 export async function categoryRoutes(app: FastifyInstance): Promise<void> {
   app.get("/categories", async () => {

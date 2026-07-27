@@ -1,6 +1,6 @@
 import Redis from "ioredis";
-import { getEnv } from "./env";
-import { logInfo, logError } from "../utils/logger";
+import { getEnv } from "./env.js";
+import { logInfo, logError } from "../utils/logger.js";
 
 let redis: Redis | null = null;
 

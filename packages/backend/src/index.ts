@@ -3,15 +3,15 @@ import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
 import compress from "@fastify/compress";
-import { getEnv } from "./config/env";
-import { createRedisClient, connectRedis, disconnectRedis } from "./config/redis";
-import { categoryRoutes } from "./routes/categories";
-import { wallpaperRoutes } from "./routes/wallpaper.routes";
-import { analyticsRoutes } from "./routes/analytics.routes";
-import { collectionRoutes } from "./routes/collection.routes";
-import { initLogger } from "./utils/logger";
-import { errorHandler } from "./middleware/error-handler";
-import { requestId } from "./middleware/request-id";
+import { getEnv } from "./config/env.js";
+import { createRedisClient, connectRedis, disconnectRedis } from "./config/redis.js";
+import { categoryRoutes } from "./routes/categories.js";
+import { wallpaperRoutes } from "./routes/wallpaper.routes.js";
+import { analyticsRoutes } from "./routes/analytics.routes.js";
+import { collectionRoutes } from "./routes/collection.routes.js";
+import { initLogger } from "./utils/logger.js";
+import { errorHandler } from "./middleware/error-handler.js";
+import { requestId } from "./middleware/request-id.js";
 
 const env = getEnv();
 

@@ -1,6 +1,6 @@
-import type { Wallpaper } from "../types/index";
-import { BLOCKED_KEYWORDS, ALLOWED_CATEGORIES } from "../config/blockedKeywords";
-import { logRejection } from "../utils/logger";
+import type { Wallpaper } from "../types/index.js";
+import { BLOCKED_KEYWORDS, ALLOWED_CATEGORIES } from "../config/blockedKeywords.js";
+import { logRejection } from "../utils/logger.js";
 
 export interface ValidationResult {
   isValid: boolean;

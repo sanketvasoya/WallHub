@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { getRedis } from "../config/redis";
+import { getRedis } from "../config/redis.js";
 
 export async function analyticsRoutes(app: FastifyInstance): Promise<void> {
   app.post("/analytics/page-view", async (request, reply) => {

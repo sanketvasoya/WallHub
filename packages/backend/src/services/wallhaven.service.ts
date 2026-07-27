@@ -1,5 +1,5 @@
-import type { WallhavenImage, WallhavenSearchResponse, Wallpaper } from "../types/index";
-import { getEnv } from "../config/env";
+import type { WallhavenImage, WallhavenSearchResponse, Wallpaper } from "../types/index.js";
+import { getEnv } from "../config/env.js";
 
 const BASE_URL = "https://wallhaven.cc/api/v1";
 const ALWAYS_PURITY = "100";

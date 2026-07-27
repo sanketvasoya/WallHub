@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
-import { COLLECTIONS, getCollectionBySlug } from "../config/collections";
-import { searchWallpapers } from "../services/wallpaper.service";
+import { COLLECTIONS, getCollectionBySlug } from "../config/collections.js";
+import { searchWallpapers } from "../services/wallpaper.service.js";
 
 export async function collectionRoutes(app: FastifyInstance): Promise<void> {
   app.get("/collections", async () => {

@@ -1,11 +1,11 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
-import { getCategoryBySlug } from "../config/categories";
+import { getCategoryBySlug } from "../config/categories.js";
 import {
   getWallpapersByCategory,
   getWallpaperById,
   getSimilarWallpapers,
   searchWallpapers,
-} from "../services/wallpaper.service";
+} from "../services/wallpaper.service.js";
 
 interface WallpaperQuery {
   category?: string;
@@ -88,7 +88,7 @@ export async function getWallpapersBatch(
     );
 
     const wallpapers = results
-      .filter((r): r is PromiseFulfilledResult<import("../types/index").Wallpaper> => r.status === "fulfilled")
+      .filter((r): r is PromiseFulfilledResult<import("../types/index.js").Wallpaper> => r.status === "fulfilled")
       .map((r) => r.value);
 
     return { wallpapers };
