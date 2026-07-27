@@ -1,0 +1,10 @@
+node_modules
+.next
+dist
+.git
+.kilo
+.vscode
+*.md
+.env*
+test-results
+playwright-report
