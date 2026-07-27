@@ -1,4 +1,4 @@
-import type { Collection } from "@wallhub/types";
+import type { Collection } from "../types/index";
 
 export const COLLECTIONS: Collection[] = [
   {
