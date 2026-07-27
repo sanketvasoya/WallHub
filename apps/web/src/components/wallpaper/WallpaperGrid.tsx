@@ -12,9 +12,9 @@ export default function WallpaperGrid({ wallpapers }: WallpaperGridProps) {
   const sorted = useMemo(() => wallpapers, [wallpapers]);
 
   return (
-    <div className="masonry-grid">
+    <div className="image-grid">
       {sorted.map((wallpaper, index) => (
-        <div key={wallpaper.id} className="masonry-item">
+        <div key={wallpaper.id} className="image-grid-item">
           <WallpaperCard wallpaper={wallpaper} index={index} />
         </div>
       ))}

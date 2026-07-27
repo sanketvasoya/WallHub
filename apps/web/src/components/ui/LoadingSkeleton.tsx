@@ -7,11 +7,6 @@ interface LoadingSkeletonProps {
   variant?: "card" | "list";
 }
 
-const aspectRatios = [
-  "3/4", "4/5", "16/9", "1/1", "9/16", "4/3", "3/4", "16/9", "1/1", "4/5",
-  "9/16", "3/4", "16/9", "4/5", "1/1",
-];
-
 export default function LoadingSkeleton({ count = 12, variant = "card" }: LoadingSkeletonProps) {
   if (variant === "list") {
     return (
@@ -30,9 +25,9 @@ export default function LoadingSkeleton({ count = 12, variant = "card" }: Loadin
   }
 
   return (
-    <div className="masonry-grid">
+    <div className="image-grid">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="masonry-item">
+        <div key={i} className="image-grid-item">
           <Box
             sx={{
               borderRadius: 3,
@@ -43,7 +38,7 @@ export default function LoadingSkeleton({ count = 12, variant = "card" }: Loadin
               variant="rounded"
               sx={{
                 width: "100%",
-                aspectRatio: aspectRatios[i % aspectRatios.length],
+                aspectRatio: "16/9",
                 borderRadius: 3,
                 bgcolor: (theme) =>
                   theme.palette.mode === "dark"

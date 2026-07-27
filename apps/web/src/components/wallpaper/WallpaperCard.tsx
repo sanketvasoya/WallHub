@@ -106,9 +106,7 @@ export default function WallpaperCard({ wallpaper, index = 0 }: WallpaperCardPro
             sx={{
               width: "100%",
               display: "block",
-              aspectRatio: wallpaper.width && wallpaper.height
-                ? `${wallpaper.width} / ${wallpaper.height}`
-                : "16/9",
+              aspectRatio: "16/9",
               objectFit: "cover",
               transition: "transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
               borderRadius: 3,
