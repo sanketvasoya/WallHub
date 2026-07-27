@@ -56,11 +56,7 @@ export async function connectRedis(): Promise<boolean> {
     return true;
   } catch (err) {
     logError("Redis connection failed", err as Error);
-    if (env.NODE_ENV === "production") {
-      logError("Redis required in production, exiting", err as Error);
-      process.exit(1);
-    }
-    logInfo("Falling back to memory cache (non-production)");
+    logInfo("Falling back to memory cache");
     redis = null;
     return false;
   }
