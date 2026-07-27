@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useFavoritesStore } from "@/lib/stores";
+import { useFavoritesStore, useDownloadHistoryStore } from "@/lib/stores";
 import toast from "react-hot-toast";
 import type { Wallpaper } from "@/types";
 
@@ -44,6 +44,7 @@ export function useWallpaperActions(wallpaper: Wallpaper | null | undefined) {
   const isFavorite = useFavoritesStore((s) =>
     wallpaper ? s.favorites.includes(wallpaper.id) : false
   );
+  const addDownload = useDownloadHistoryStore((s) => s.addDownload);
   const [downloading, setDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
 
@@ -99,6 +100,13 @@ export function useWallpaperActions(wallpaper: Wallpaper | null | undefined) {
 
       setDownloadProgress(100);
       toast.success("Download complete!");
+
+      addDownload({
+        wallpaperId: wallpaper.id,
+        title: wallpaper.title,
+        thumbnail: wallpaper.thumbnail,
+        filesize: wallpaper.filesize,
+      });
     } catch (err) {
       console.error("Download failed:", err);
       toast.error("Download failed. Opening in new tab instead.");
@@ -107,7 +115,7 @@ export function useWallpaperActions(wallpaper: Wallpaper | null | undefined) {
       setDownloading(false);
       setTimeout(() => setDownloadProgress(null), 2000);
     }
-  }, [wallpaper]);
+  }, [wallpaper, addDownload]);
 
   const handleShare = useCallback(() => {
     if (!wallpaper) return;

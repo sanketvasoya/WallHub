@@ -6,7 +6,7 @@ import {
 } from "./wallhaven.service";
 import { cacheGet, cacheSet } from "./cache.service";
 import { validateWallpapers, validateWallpaper } from "./validation.service";
-import { CACHE_TTL } from "../config/blockedKeywords";
+import { CACHE_TTL } from "../config/cache";
 import { logInfo, logError } from "../utils/logger";
 
 function mapSortParam(sort: string): { sorting: string; topRange?: string } {
@@ -24,7 +24,7 @@ export async function getWallpapersByCategory(
 ): Promise<{ wallpapers: Wallpaper[]; page: number; totalResults: number; lastPage: number }> {
   const cacheKey = `wallpapers:${category}:${sort}:${page}`;
 
-  const cached = cacheGet<{ wallpapers: Wallpaper[]; page: number; totalResults: number; lastPage: number }>(cacheKey);
+  const cached = await cacheGet<{ wallpapers: Wallpaper[]; page: number; totalResults: number; lastPage: number }>(cacheKey);
   if (cached) return cached;
 
   const { sorting, topRange } = mapSortParam(sort);
@@ -54,7 +54,7 @@ export async function getWallpapersByCategory(
       lastPage: result.meta.last_page,
     };
 
-    cacheSet(cacheKey, response, CACHE_TTL.SHORT);
+    await cacheSet(cacheKey, response, CACHE_TTL.SHORT);
     return response;
   } catch (error) {
     logError(`Failed to fetch wallpapers for category: ${category}`, error as Error);
@@ -65,7 +65,7 @@ export async function getWallpapersByCategory(
 export async function getWallpaperById(id: string): Promise<Wallpaper> {
   const cacheKey = `wallpaper:${id}`;
 
-  const cached = cacheGet<Wallpaper>(cacheKey);
+  const cached = await cacheGet<Wallpaper>(cacheKey);
   if (cached) return cached;
 
   try {
@@ -78,7 +78,7 @@ export async function getWallpaperById(id: string): Promise<Wallpaper> {
       throw new Error(`Wallpaper failed content validation: ${validation.reason}`);
     }
 
-    cacheSet(cacheKey, wallpaper, CACHE_TTL.LONG);
+    await cacheSet(cacheKey, wallpaper, CACHE_TTL.LONG);
     return wallpaper;
   } catch (error) {
     logError(`Failed to fetch wallpaper by id: ${id}`, error as Error);
@@ -92,7 +92,7 @@ export async function getSimilarWallpapers(
 ): Promise<{ wallpapers: Wallpaper[]; page: number; totalResults: number; lastPage: number }> {
   const cacheKey = `similar:${id}:${page}`;
 
-  const cached = cacheGet<{ wallpapers: Wallpaper[]; page: number; totalResults: number; lastPage: number }>(cacheKey);
+  const cached = await cacheGet<{ wallpapers: Wallpaper[]; page: number; totalResults: number; lastPage: number }>(cacheKey);
   if (cached) return cached;
 
   try {
@@ -123,7 +123,7 @@ export async function getSimilarWallpapers(
       lastPage: tagResult.meta.last_page,
     };
 
-    cacheSet(cacheKey, response, CACHE_TTL.SHORT);
+    await cacheSet(cacheKey, response, CACHE_TTL.SHORT);
     return response;
   } catch (error) {
     logError(`Failed to fetch similar wallpapers for: ${id}`, error as Error);
@@ -138,7 +138,7 @@ export async function searchWallpapers(
 ): Promise<{ wallpapers: Wallpaper[]; query: string; totalResults: number }> {
   const cacheKey = `search:${query.toLowerCase()}:${sort}:${page}`;
 
-  const cached = cacheGet<{ wallpapers: Wallpaper[]; query: string; totalResults: number }>(cacheKey);
+  const cached = await cacheGet<{ wallpapers: Wallpaper[]; query: string; totalResults: number }>(cacheKey);
   if (cached) return cached;
 
   const { sorting, topRange } = mapSortParam(sort);
@@ -166,7 +166,7 @@ export async function searchWallpapers(
       totalResults: result.meta.total,
     };
 
-    cacheSet(cacheKey, response, CACHE_TTL.MEDIUM);
+    await cacheSet(cacheKey, response, CACHE_TTL.MEDIUM);
     return response;
   } catch (error) {
     logError(`Failed to search wallpapers: ${query}`, error as Error);

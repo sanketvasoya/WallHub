@@ -3,6 +3,8 @@ import { Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { QueryProvider } from "@/providers/QueryProvider";
+import { AnalyticsTracker } from "@/providers/AnalyticsTracker";
+import { ServiceWorkerRegistration } from "@/providers/ServiceWorkerRegistration";
 import { Toaster } from "react-hot-toast";
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -59,6 +61,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body suppressHydrationWarning>
         <ThemeProvider>
           <QueryProvider>
+            <AnalyticsTracker />
+            <ServiceWorkerRegistration />
             <Toaster
               position="bottom-center"
               toastOptions={{

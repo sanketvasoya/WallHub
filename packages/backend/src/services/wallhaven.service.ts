@@ -34,7 +34,12 @@ export async function searchWallhaven(
   });
 
   if (!response.ok) {
-    throw new Error(`Wallhaven API error: ${response.status}`);
+    const error = new Error(`Wallhaven API error: ${response.status}`) as Error & { statusCode: number; retryAfter?: string };
+    error.statusCode = response.status;
+    if (response.status === 429) {
+      error.retryAfter = response.headers.get("retry-after") || undefined;
+    }
+    throw error;
   }
 
   return (await response.json()) as WallhavenSearchResponse;
@@ -53,7 +58,12 @@ export async function getWallhavenWallpaper(id: string): Promise<WallhavenImage>
   });
 
   if (!response.ok) {
-    throw new Error(`Wallhaven API error: ${response.status}`);
+    const error = new Error(`Wallhaven API error: ${response.status}`) as Error & { statusCode: number; retryAfter?: string };
+    error.statusCode = response.status;
+    if (response.status === 429) {
+      error.retryAfter = response.headers.get("retry-after") || undefined;
+    }
+    throw error;
   }
 
   const data = (await response.json()) as { data: WallhavenImage };

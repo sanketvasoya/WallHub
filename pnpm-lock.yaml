@@ -31,6 +31,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.75.5
         version: 5.101.2(react@19.2.7)
+      '@wallhub/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       axios:
         specifier: ^1.9.0
         version: 1.18.1
@@ -104,6 +107,9 @@ importers:
       '@fastify/rate-limit':
         specifier: ^10.2.1
         version: 10.3.0
+      '@wallhub/types':
+        specifier: workspace:*
+        version: link:../types
       fastify:
         specifier: ^5.3.3
         version: 5.10.0
@@ -120,6 +126,12 @@ importers:
       '@types/node':
         specifier: ^22.15.3
         version: 22.20.1
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
+
+  packages/types:
+    devDependencies:
       typescript:
         specifier: ^5.8.3
         version: 5.9.3

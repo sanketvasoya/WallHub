@@ -56,8 +56,12 @@ export async function getWallpapers(
       cat.wallhavenTags,
       cat.wallhavenCategories
     );
-  } catch (error) {
+  } catch (error: any) {
     request.log.error(error);
+    if (error?.statusCode === 429) {
+      reply.header("Retry-After", error.retryAfter || "30");
+      return reply.status(429).send({ error: "Rate limited by Wallhaven", retryAfter: error.retryAfter });
+    }
     return reply.status(502).send({ error: "Failed to fetch wallpapers" });
   }
 }
@@ -138,8 +142,12 @@ export async function search(
 
   try {
     return await searchWallpapers(q.trim(), sort, pageNum);
-  } catch (error) {
+  } catch (error: any) {
     request.log.error(error);
+    if (error?.statusCode === 429) {
+      reply.header("Retry-After", error.retryAfter || "30");
+      return reply.status(429).send({ error: "Rate limited by Wallhaven", retryAfter: error.retryAfter });
+    }
     return reply.status(502).send({ error: "Search failed" });
   }
 }

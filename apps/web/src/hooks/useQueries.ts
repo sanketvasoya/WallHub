@@ -9,6 +9,8 @@ import {
   fetchSimilarWallpapers,
   fetchWallpapersBatch,
   searchWallpapers,
+  fetchCollections,
+  fetchCollection,
 } from "@/lib/api/client";
 
 export function useCategories() {
@@ -85,4 +87,26 @@ export function useFavoriteWallpapers(ids: string[]) {
     isLoading,
     isError,
   };
+}
+
+export function useCollections() {
+  return useQuery({
+    queryKey: ["collections"],
+    queryFn: fetchCollections,
+    staleTime: 60 * 60 * 1000,
+  });
+}
+
+export function useCollection(slug: string) {
+  return useInfiniteQuery({
+    queryKey: ["collection", slug],
+    queryFn: ({ pageParam = 1 }) => fetchCollection(slug, pageParam),
+    getNextPageParam: (lastPage) => {
+      if (lastPage.page >= 3) return undefined; // Cap at 3 pages
+      return lastPage.page + 1;
+    },
+    initialPageParam: 1,
+    enabled: !!slug,
+    staleTime: 5 * 60 * 1000,
+  });
 }

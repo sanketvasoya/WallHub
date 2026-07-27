@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   AppBar,
   Toolbar,
@@ -15,6 +15,8 @@ import {
   useMediaQuery,
   Divider,
   Tooltip,
+  TextField,
+  InputAdornment,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import {
@@ -23,6 +25,7 @@ import {
   LightMode,
   Brightness6,
   Whatshot,
+  Search as SearchIcon,
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import NextLink from "next/link";
@@ -32,6 +35,7 @@ import { useResolvedTheme } from "@/providers/ThemeProvider";
 import SearchBar from "@/components/ui/SearchBar";
 import { navItems, isActive } from "@/lib/nav";
 import { tokens } from "@/lib/tokens";
+import { useCategories } from "@/hooks/useQueries";
 
 const MotionAppBar = motion.create(AppBar);
 
@@ -43,18 +47,32 @@ const themeOptions = [
 
 export default function Header() {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [categorySearch, setCategorySearch] = useState("");
   const muiTheme = useTheme();
   const pathname = usePathname();
   const router = useRouter();
   const { theme, setTheme } = useSettingsStore();
   const { resolved } = useResolvedTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
+  const { data: categoriesData } = useCategories();
 
   const currentThemeIdx = themeOptions.findIndex((t) => t.value === theme);
   const cycleTheme = () => {
     const next = (currentThemeIdx + 1) % themeOptions.length;
     setTheme(themeOptions[next]!.value);
   };
+
+  const filteredCategories = useMemo(() => {
+    if (!categoriesData?.categories) return [];
+    if (!categorySearch.trim()) return categoriesData.categories;
+    const q = categorySearch.toLowerCase();
+    return categoriesData.categories.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.slug.includes(q) ||
+        c.description.toLowerCase().includes(q)
+    );
+  }, [categoriesData?.categories, categorySearch]);
 
   return (
     <>
@@ -219,6 +237,56 @@ export default function Header() {
             );
           })}
         </List>
+        <Divider sx={{ mx: 2, opacity: 0.06 }} />
+        <Box sx={{ px: 2, py: 1.5 }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ mb: 1, display: "block", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", fontSize: "0.65rem" }}
+          >
+            Browse Categories
+          </Typography>
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="Search categories..."
+            value={categorySearch}
+            onChange={(e) => setCategorySearch(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ fontSize: 18, color: "text.secondary" }} />
+                </InputAdornment>
+              ),
+            }}
+            sx={{
+              mb: 1,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 2,
+                fontSize: "0.8rem",
+                bgcolor: (t) => t.palette.mode === "dark" ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)",
+              },
+            }}
+          />
+          <List sx={{ maxHeight: 240, overflow: "auto", px: 0 }}>
+            {filteredCategories.slice(0, 15).map((cat) => (
+              <ListItemButton
+                key={cat.slug}
+                onClick={() => {
+                  router.push(`/category/${cat.slug}`);
+                  setDrawerOpen(false);
+                  setCategorySearch("");
+                }}
+                sx={{ borderRadius: 2, py: 0.75, minHeight: 36 }}
+              >
+                <ListItemText
+                  primary={cat.name}
+                  primaryTypographyProps={{ fontSize: "0.82rem", fontWeight: 500 }}
+                />
+              </ListItemButton>
+            ))}
+          </List>
+        </Box>
         <Divider sx={{ mx: 2, opacity: 0.06 }} />
         <List sx={{ px: 1, mt: 0.5 }}>
           <Typography

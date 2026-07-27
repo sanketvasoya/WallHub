@@ -4,9 +4,14 @@ import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
 import compress from "@fastify/compress";
 import { getEnv } from "./config/env";
+import { createRedisClient, connectRedis, disconnectRedis } from "./config/redis";
 import { categoryRoutes } from "./routes/categories";
 import { wallpaperRoutes } from "./routes/wallpaper.routes";
+import { analyticsRoutes } from "./routes/analytics.routes";
+import { collectionRoutes } from "./routes/collection.routes";
 import { initLogger } from "./utils/logger";
+import { errorHandler } from "./middleware/error-handler";
+import { requestId } from "./middleware/request-id";
 
 const env = getEnv();
 
@@ -25,7 +30,7 @@ await app.register(helmet, {
 
 await app.register(cors, {
   origin: env.CORS_ORIGIN,
-  methods: ["GET"],
+  methods: ["GET", "POST"],
   credentials: false,
 });
 
@@ -35,6 +40,10 @@ await app.register(rateLimit, {
 });
 
 await app.register(compress);
+
+app.setErrorHandler(errorHandler);
+
+app.addHook("onRequest", requestId);
 
 app.get("/", async () => {
   return {
@@ -51,9 +60,16 @@ app.get("/health", async () => {
 
 await app.register(categoryRoutes);
 await app.register(wallpaperRoutes);
+await app.register(analyticsRoutes);
+await app.register(collectionRoutes);
+
+// Connect Redis on startup
+createRedisClient();
+await connectRedis();
 
 async function shutdown() {
   app.log.info("Shutting down...");
+  await disconnectRedis();
   await app.close();
   process.exit(0);
 }

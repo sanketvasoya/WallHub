@@ -1,5 +1,14 @@
 import axios from "axios";
-import type { WallpapersResponse, SearchResponse, CategoriesResponse, Category, Wallpaper } from "@/types";
+import toast from "react-hot-toast";
+import type {
+  WallpapersResponse,
+  SearchResponse,
+  CategoriesResponse,
+  Category,
+  Wallpaper,
+  CollectionsResponse,
+  Collection,
+} from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -7,6 +16,19 @@ const api = axios.create({
   baseURL: API_URL,
   timeout: 15000,
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 429) {
+      const retryAfter = parseInt(error.response.headers["retry-after"] || "30", 10);
+      const message = error.response.data?.error || "Rate limited. Please wait.";
+      toast.error(`${message} Retry in ${retryAfter}s`, { duration: retryAfter * 1000 });
+      error.retryAfter = retryAfter;
+    }
+    return Promise.reject(error);
+  }
+);
 
 export async function fetchCategories(): Promise<CategoriesResponse> {
   const { data } = await api.get<CategoriesResponse>("/categories");
@@ -60,4 +82,25 @@ export async function searchWallpapers(
     params: { q: query, sort, limit: 50 },
   });
   return data;
+}
+
+export async function fetchCollections(): Promise<CollectionsResponse> {
+  const { data } = await api.get<CollectionsResponse>("/collections");
+  return data;
+}
+
+export async function fetchCollection(
+  slug: string,
+  page: number = 1
+): Promise<{ collection: Collection; wallpapers: Wallpaper[]; totalResults: number; page: number }> {
+  const { data } = await api.get(`/collections/${slug}`, { params: { page } });
+  return data;
+}
+
+export async function trackPageView(path: string, referrer?: string): Promise<void> {
+  try {
+    await api.post("/analytics/page-view", { path, referrer });
+  } catch {
+    // Silent fail for analytics
+  }
 }

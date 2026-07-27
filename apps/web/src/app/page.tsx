@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Typography, Button, useTheme } from "@mui/material";
-import { TrendingUp, ArrowForward, Whatshot } from "@mui/icons-material";
+import { TrendingUp, ArrowForward, Whatshot, NewReleases, AutoAwesome } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
@@ -13,6 +13,7 @@ import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 import ErrorState from "@/components/ui/ErrorState";
 import { useWallpapers } from "@/hooks/useQueries";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useCollections } from "@/hooks/useQueries";
 import { tokens } from "@/lib/tokens";
 
 const MotionBox = motion.create(Box);
@@ -192,10 +193,54 @@ function SectionHeader({ title, icon, onSeeAll }: { title: string; icon: React.R
   );
 }
 
+function CollectionCard({ collection, index }: { collection: { slug: string; name: string; description: string }; index: number }) {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+  const router = useRouter();
+
+  return (
+    <MotionBox
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.3, delay: index * 0.05 }}
+      onClick={() => router.push(`/collections/${collection.slug}`)}
+      sx={{
+        p: 2,
+        borderRadius: 2.5,
+        cursor: "pointer",
+        background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)",
+        border: "1px solid",
+        borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+        transition: "all 0.2s ease",
+        "&:hover": {
+          borderColor: "primary.main",
+          transform: "translateY(-1px)",
+        },
+      }}
+    >
+      <Typography variant="body2" fontWeight={700} sx={{ fontSize: "0.85rem" }}>
+        {collection.name}
+      </Typography>
+      <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.72rem" }}>
+        {collection.description}
+      </Typography>
+    </MotionBox>
+  );
+}
+
 function HomeContent() {
   const router = useRouter();
   const { data: wallpapersData, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useWallpapers("trending", "hot");
   const allWallpapers = wallpapersData?.pages.flatMap((p) => p.wallpapers) ?? [];
+
+  const newArrivals = useWallpapers("trending", "new");
+  const newWallpapers = newArrivals.data?.pages.flatMap((p) => p.wallpapers).slice(0, 10) ?? [];
+
+  const editorsPicks = useWallpapers("trending", "top");
+  const editorWallpapers = editorsPicks.data?.pages.flatMap((p) => p.wallpapers).slice(0, 10) ?? [];
+
+  const { data: collectionsData } = useCollections();
+  const collections = collectionsData?.collections?.slice(0, 4) ?? [];
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: fetchNextPage,
@@ -227,6 +272,28 @@ function HomeContent() {
         </Box>
       </Box>
 
+      {collections.length > 0 && (
+        <Box sx={{ mt: 4, mb: 2 }}>
+          <SectionHeader
+            title="Collections"
+            icon={<AutoAwesome sx={{ color: "warning.main", fontSize: 20 }} />}
+            onSeeAll={() => router.push("/collections")}
+          />
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+              gap: 1.5,
+              px: { xs: 1.5, sm: 2, md: 3 },
+            }}
+          >
+            {collections.map((c, i) => (
+              <CollectionCard key={c.slug} collection={c} index={i} />
+            ))}
+          </Box>
+        </Box>
+      )}
+
       <Box sx={{ mt: 4 }}>
         <SectionHeader
           title="Trending Now"
@@ -241,6 +308,28 @@ function HomeContent() {
           <WallpaperGrid wallpapers={allWallpapers} />
         )}
       </Box>
+
+      {newWallpapers.length > 0 && (
+        <Box sx={{ mt: 4 }}>
+          <SectionHeader
+            title="New Arrivals"
+            icon={<NewReleases sx={{ color: "success.main", fontSize: 20 }} />}
+            onSeeAll={() => router.push("/category/trending?sort=new")}
+          />
+          <WallpaperGrid wallpapers={newWallpapers} />
+        </Box>
+      )}
+
+      {editorWallpapers.length > 0 && (
+        <Box sx={{ mt: 4 }}>
+          <SectionHeader
+            title="Editor's Picks"
+            icon={<AutoAwesome sx={{ color: "warning.main", fontSize: 20 }} />}
+            onSeeAll={() => router.push("/category/trending?sort=top")}
+          />
+          <WallpaperGrid wallpapers={editorWallpapers} />
+        </Box>
+      )}
 
       {isFetchingNextPage && (
         <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>

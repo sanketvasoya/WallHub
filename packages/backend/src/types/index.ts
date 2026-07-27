@@ -1,3 +1,7 @@
+import type { Wallpaper, Category } from "@wallhub/types";
+
+export type { Wallpaper, Category };
+
 export interface WallhavenImage {
   id: string;
   url: string;
@@ -46,37 +50,4 @@ export interface WallhavenSearchResponse {
     total: number;
     query: string | null;
   };
-}
-
-export interface Category {
-  slug: string;
-  name: string;
-  icon: string;
-  wallhavenTags: string[];
-  wallhavenCategories: string;
-  wallhavenPurity: string;
-  description: string;
-}
-
-export interface Wallpaper {
-  id: string;
-  title: string;
-  image: string;
-  preview: string;
-  thumbnail: string;
-  width: number;
-  height: number;
-  aspectRatio: string;
-  filesize: string;
-  upvotes: number;
-  author: string;
-  subreddit: string;
-  createdAt: string;
-  originalUrl: string;
-  orientation: "landscape" | "portrait" | "square";
-  nsfw: boolean;
-  tags: string[];
-  colors: string[];
-  source: string;
-  views: number;
 }

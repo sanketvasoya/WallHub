@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Box, Typography, ToggleButtonGroup, ToggleButton, Chip, IconButton, CircularProgress } from "@mui/material";
-import { ArrowBack, Whatshot, NewReleases, TrendingUp } from "@mui/icons-material";
+import { ArrowBack, Whatshot, NewReleases, TrendingUp, Keyboard } from "@mui/icons-material";
 import { useRouter, useParams } from "next/navigation";
 import Header from "@/components/layout/Header";
 import BottomNav from "@/components/layout/BottomNav";
@@ -11,8 +11,10 @@ import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 import ErrorState from "@/components/ui/ErrorState";
 import { useWallpapers } from "@/hooks/useQueries";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useSortPersistenceStore } from "@/lib/stores";
+import type { SortOption } from "@/types";
 
-const sortOptions = [
+const sortOptions: { value: SortOption; label: string; icon: React.ReactNode }[] = [
   { value: "hot", label: "Hot", icon: <Whatshot sx={{ fontSize: 16 }} /> },
   { value: "new", label: "New", icon: <NewReleases sx={{ fontSize: 16 }} /> },
   { value: "top", label: "Top", icon: <TrendingUp sx={{ fontSize: 16 }} /> },
@@ -22,7 +24,19 @@ function CategoryContent() {
   const params = useParams();
   const router = useRouter();
   const slug = (params?.slug as string) || "trending";
-  const [sort, setSort] = useState("hot");
+  const getSort = useSortPersistenceStore((s) => s.getSort);
+  const setSortStore = useSortPersistenceStore((s) => s.setSort);
+  const [sort, setSort] = useState<SortOption>(() => getSort(slug));
+
+  useEffect(() => {
+    setSort(getSort(slug));
+  }, [slug, getSort]);
+
+  const handleSortChange = (_: unknown, value: SortOption | null) => {
+    if (!value) return;
+    setSort(value);
+    setSortStore(slug, value);
+  };
 
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useWallpapers(slug, sort);
   const wallpapers = data?.pages.flatMap((p) => p.wallpapers) ?? [];
@@ -61,7 +75,7 @@ function CategoryContent() {
           <ToggleButtonGroup
             value={sort}
             exclusive
-            onChange={(_, v) => v && setSort(v)}
+            onChange={handleSortChange}
             size="small"
             sx={{
               "& .MuiToggleButton-root": {

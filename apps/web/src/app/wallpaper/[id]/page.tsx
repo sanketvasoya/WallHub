@@ -96,6 +96,9 @@ function WallpaperViewerContent() {
   const lastTap = useRef(0);
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const showShortcutsRef = useRef(false);
+
   const similarWallpapers = similarData?.pages.flatMap((p) => p.wallpapers) ?? [];
 
   const { sentinelRef } = useInfiniteScroll({
@@ -104,10 +107,14 @@ function WallpaperViewerContent() {
     isLoading: fetchingSimilar,
   });
 
-  // Keep showInfoRef in sync
+  // Keep showInfoRef and showShortcutsRef in sync
   useEffect(() => {
     showInfoRef.current = showInfo;
   }, [showInfo]);
+
+  useEffect(() => {
+    showShortcutsRef.current = showShortcuts;
+  }, [showShortcuts]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -115,8 +122,16 @@ function WallpaperViewerContent() {
       const target = e.target;
       if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) return;
 
+      if (e.key === "?") {
+        e.preventDefault();
+        setShowShortcuts((s) => !s);
+        return;
+      }
+
       if (e.key === "Escape") {
-        if (showInfoRef.current) {
+        if (showShortcutsRef.current) {
+          setShowShortcuts(false);
+        } else if (showInfoRef.current) {
           setShowInfo(false);
         } else {
           router.back();
@@ -134,10 +149,20 @@ function WallpaperViewerContent() {
       if (e.key === "i" || e.key === "I") {
         setShowInfo((s) => !s);
       }
+      if (e.key === "ArrowLeft" && similarWallpapers.length > 0) {
+        const currentIdx = similarWallpapers.findIndex((w) => w.id === id);
+        const prevIdx = currentIdx > 0 ? currentIdx - 1 : similarWallpapers.length - 1;
+        router.push(`/wallpaper/${similarWallpapers[prevIdx].id}`);
+      }
+      if (e.key === "ArrowRight" && similarWallpapers.length > 0) {
+        const currentIdx = similarWallpapers.findIndex((w) => w.id === id);
+        const nextIdx = currentIdx < similarWallpapers.length - 1 ? currentIdx + 1 : 0;
+        router.push(`/wallpaper/${similarWallpapers[nextIdx].id}`);
+      }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [router, handleToggleFavorite, handleDownload]);
+  }, [router, handleToggleFavorite, handleDownload, id, similarWallpapers]);
 
   const showToast = useCallback((message: string) => {
     setToast({ open: true, message });
@@ -712,6 +737,62 @@ function WallpaperViewerContent() {
                 />
               </Box>
             </Box>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Keyboard Shortcuts Overlay */}
+      <AnimatePresence>
+        {showShortcuts && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{ position: "fixed", inset: 0, zIndex: 20, display: "flex", alignItems: "center", justifyContent: "center" }}
+            onClick={() => setShowShortcuts(false)}
+          >
+            <Box
+              sx={{
+                position: "absolute",
+                inset: 0,
+                bgcolor: "rgba(0,0,0,0.6)",
+                backdropFilter: "blur(8px)",
+              }}
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{ position: "relative", zIndex: 1 }}
+            >
+              <Box
+                sx={{
+                  bgcolor: isDark ? "rgba(14,14,22,0.96)" : "rgba(255,255,255,0.96)",
+                  borderRadius: 4,
+                  p: 3,
+                  minWidth: 280,
+                  backdropFilter: "blur(40px)",
+                }}
+              >
+                <Typography variant="h6" fontWeight={700} sx={{ mb: 2, fontSize: "1rem" }}>
+                  Keyboard Shortcuts
+                </Typography>
+                {[
+                  ["F", "Toggle favorite"],
+                  ["D", "Download"],
+                  ["I", "Toggle info panel"],
+                  ["?", "Show/hide shortcuts"],
+                  ["\u2190 / \u2192", "Navigate similar wallpapers"],
+                  ["Esc", "Close panel / Go back"],
+                ].map(([key, desc]) => (
+                  <Box key={key} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", py: 0.5 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.8rem" }}>{desc}</Typography>
+                    <Chip label={key} size="small" sx={{ height: 22, fontSize: "0.7rem", fontWeight: 600, ml: 2 }} />
+                  </Box>
+                ))}
+              </Box>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { ThemeMode } from "@/types";
+import { get, set, del, keys } from "idb-keyval";
+import type { ThemeMode, SortOption } from "@/types";
+import type { DownloadHistoryEntry } from "@wallhub/types";
 
 interface SettingsState {
   theme: ThemeMode;
@@ -77,5 +79,86 @@ export const useSearchHistoryStore = create<SearchHistoryState>()(
       clearHistory: () => set({ history: [] }),
     }),
     { name: "wallhub-search-history" }
+  )
+);
+
+const DOWNLOAD_HISTORY_KEY = "wallhub-download-history";
+const MAX_DOWNLOAD_HISTORY = 50;
+
+async function loadDownloadHistory(): Promise<DownloadHistoryEntry[]> {
+  try {
+    const data = await get<DownloadHistoryEntry[]>(DOWNLOAD_HISTORY_KEY);
+    return data || [];
+  } catch {
+    return [];
+  }
+}
+
+async function saveDownloadHistory(entries: DownloadHistoryEntry[]): Promise<void> {
+  try {
+    await set(DOWNLOAD_HISTORY_KEY, entries);
+  } catch {
+    // Silent fail for IndexedDB
+  }
+}
+
+interface DownloadHistoryState {
+  history: DownloadHistoryEntry[];
+  loaded: boolean;
+  loadHistory: () => Promise<void>;
+  addDownload: (entry: Omit<DownloadHistoryEntry, "id" | "downloadedAt">) => Promise<void>;
+  removeDownload: (id: string) => Promise<void>;
+  clearHistory: () => Promise<void>;
+}
+
+export const useDownloadHistoryStore = create<DownloadHistoryState>()(
+  (set, get) => ({
+    history: [],
+    loaded: false,
+    loadHistory: async () => {
+      if (get().loaded) return;
+      const history = await loadDownloadHistory();
+      set({ history, loaded: true });
+    },
+    addDownload: async (entry) => {
+      const id = `${entry.wallpaperId}-${Date.now()}`;
+      const newEntry: DownloadHistoryEntry = {
+        ...entry,
+        id,
+        downloadedAt: new Date().toISOString(),
+      };
+      const history = [newEntry, ...get().history].slice(0, MAX_DOWNLOAD_HISTORY);
+      set({ history });
+      await saveDownloadHistory(history);
+    },
+    removeDownload: async (id) => {
+      const history = get().history.filter((e) => e.id !== id);
+      set({ history });
+      await saveDownloadHistory(history);
+    },
+    clearHistory: async () => {
+      set({ history: [] });
+      await saveDownloadHistory([]);
+    },
+  })
+);
+
+interface SortPersistenceState {
+  sorts: Record<string, SortOption>;
+  setSort: (categorySlug: string, sort: SortOption) => void;
+  getSort: (categorySlug: string) => SortOption;
+}
+
+export const useSortPersistenceStore = create<SortPersistenceState>()(
+  persist(
+    (set, get) => ({
+      sorts: {},
+      setSort: (categorySlug, sort) =>
+        set((state) => ({
+          sorts: { ...state.sorts, [categorySlug]: sort },
+        })),
+      getSort: (categorySlug) => get().sorts[categorySlug] || "hot",
+    }),
+    { name: "wallhub-sorts" }
   )
 );
