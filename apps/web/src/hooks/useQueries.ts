@@ -29,10 +29,10 @@ export function useCategory(slug: string) {
   });
 }
 
-export function useWallpapers(category: string, sort: string = "hot") {
+export function useWallpapers(category: string, sort: string = "hot", ratios?: string, atleast?: string) {
   return useInfiniteQuery({
-    queryKey: ["wallpapers", category, sort],
-    queryFn: ({ pageParam = 1 }) => fetchWallpapers(category, sort, pageParam),
+    queryKey: ["wallpapers", category, sort, ratios || "all", atleast || "1920x1080"],
+    queryFn: ({ pageParam = 1 }) => fetchWallpapers(category, sort, pageParam, ratios, atleast),
     getNextPageParam: (lastPage) => {
       if (lastPage.page >= lastPage.lastPage) return undefined;
       return lastPage.page + 1;
@@ -51,10 +51,10 @@ export function useWallpaper(id: string) {
   });
 }
 
-export function useSimilarWallpapers(id: string) {
+export function useSimilarWallpapers(id: string, ratios?: string, atleast?: string) {
   return useInfiniteQuery({
-    queryKey: ["similar", id],
-    queryFn: ({ pageParam = 1 }) => fetchSimilarWallpapers(id, pageParam, 24),
+    queryKey: ["similar", id, ratios || "all", atleast || "1920x1080"],
+    queryFn: ({ pageParam = 1 }) => fetchSimilarWallpapers(id, pageParam, 24, ratios, atleast),
     getNextPageParam: (lastPage) => {
       if (lastPage.page >= lastPage.lastPage) return undefined;
       return lastPage.page + 1;
@@ -65,10 +65,10 @@ export function useSimilarWallpapers(id: string) {
   });
 }
 
-export function useSearch(query: string, sort: string = "relevance") {
+export function useSearch(query: string, sort: string = "relevance", ratios?: string, atleast?: string) {
   return useQuery({
-    queryKey: ["search", query, sort],
-    queryFn: () => searchWallpapers(query, sort),
+    queryKey: ["search", query, sort, ratios || "all", atleast || "1920x1080"],
+    queryFn: () => searchWallpapers(query, sort, ratios, atleast),
     enabled: query.trim().length > 0,
     staleTime: 3 * 60 * 1000,
   });

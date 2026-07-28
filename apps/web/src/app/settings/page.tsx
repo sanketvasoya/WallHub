@@ -12,11 +12,12 @@ import {
   FormControl,
   Button,
 } from "@mui/material";
-import { DarkMode, LightMode, Brightness6, Settings as SettingsIcon, DeleteOutline } from "@mui/icons-material";
+import { DarkMode, LightMode, Brightness6, Settings as SettingsIcon, DeleteOutline, PhoneIphone, DesktopWindows, Wallpaper } from "@mui/icons-material";
 import Header from "@/components/layout/Header";
 import BottomNav from "@/components/layout/BottomNav";
 import PageHeader from "@/components/ui/PageHeader";
 import { useSettingsStore, useSearchHistoryStore, useDownloadHistoryStore } from "@/lib/stores";
+import { useOrientation } from "@/hooks/useOrientation";
 import toast from "react-hot-toast";
 
 function SettingsContent() {
@@ -26,6 +27,7 @@ function SettingsContent() {
   const setGridDensity = useSettingsStore((s) => s.setGridDensity);
   const clearSearchHistory = useSearchHistoryStore((s) => s.clearHistory);
   const clearDownloadHistory = useDownloadHistoryStore((s) => s.clearHistory);
+  const { resolved: orientation, setPreference: setOrientation } = useOrientation();
 
   const handleClearSearch = () => {
     clearSearchHistory();
@@ -133,6 +135,43 @@ function SettingsContent() {
                 <MenuItem value="compact">Compact</MenuItem>
                 <MenuItem value="comfortable">Comfortable</MenuItem>
                 <MenuItem value="spacious">Spacious</MenuItem>
+              </Select>
+            </FormControl>
+          </ListItem>
+          <Divider sx={{ opacity: 0.06 }} />
+          <ListItem>
+            <ListItemText
+              primary="Wallpaper Orientation"
+              secondary="Filter wallpapers by aspect ratio"
+              primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }}
+              secondaryTypographyProps={{ fontSize: "0.78rem" }}
+            />
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <Select
+                value={orientation}
+                onChange={(e) => setOrientation(e.target.value as "phone" | "desktop" | "all")}
+                sx={{
+                  borderRadius: 2,
+                  fontSize: "0.85rem",
+                  fontWeight: 500,
+                  "& .MuiSelect-select": { py: 1 },
+                }}
+              >
+                <MenuItem value="phone">
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <PhoneIphone sx={{ fontSize: 17 }} /> Phone
+                  </Box>
+                </MenuItem>
+                <MenuItem value="desktop">
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <DesktopWindows sx={{ fontSize: 17 }} /> Desktop
+                  </Box>
+                </MenuItem>
+                <MenuItem value="all">
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Wallpaper sx={{ fontSize: 17 }} /> All
+                  </Box>
+                </MenuItem>
               </Select>
             </FormControl>
           </ListItem>

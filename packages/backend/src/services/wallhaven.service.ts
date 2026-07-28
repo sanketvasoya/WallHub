@@ -4,22 +4,45 @@ import { getEnv } from "../config/env.js";
 const BASE_URL = "https://wallhaven.cc/api/v1";
 const ALWAYS_PURITY = "100";
 
+export interface SearchWallhavenOptions {
+  query?: string;
+  categories?: string;
+  sorting?: string;
+  page?: number;
+  topRange?: string;
+  ratios?: string;
+  atleast?: string;
+}
+
 export async function searchWallhaven(
-  query: string,
-  categories: string = "111",
-  sorting: string = "relevance",
-  page: number = 1,
+  optionsOrQuery: string | SearchWallhavenOptions,
+  categories?: string,
+  sorting?: string,
+  page?: number,
   topRange?: string
 ): Promise<WallhavenSearchResponse> {
+  const opts: SearchWallhavenOptions =
+    typeof optionsOrQuery === "string"
+      ? { query: optionsOrQuery, categories, sorting, page, topRange }
+      : optionsOrQuery;
+
   const env = getEnv();
   const url = new URL(`${BASE_URL}/search`);
 
-  if (query) url.searchParams.set("q", query);
-  url.searchParams.set("categories", categories);
+  if (opts.query) url.searchParams.set("q", opts.query);
+  url.searchParams.set("categories", opts.categories || "111");
   url.searchParams.set("purity", ALWAYS_PURITY);
-  url.searchParams.set("sorting", sorting);
-  url.searchParams.set("page", String(page));
-  url.searchParams.set("atleast", "1920x1080");
+  url.searchParams.set("sorting", opts.sorting || "relevance");
+  url.searchParams.set("page", String(opts.page || 1));
+  url.searchParams.set("atleast", opts.atleast || "1920x1080");
+
+  if (opts.ratios) {
+    url.searchParams.set("ratios", opts.ratios);
+  }
+
+  if (opts.sorting === "toplist" && opts.topRange) {
+    url.searchParams.set("topRange", opts.topRange);
+  }
 
   if (sorting === "toplist" && topRange) {
     url.searchParams.set("topRange", topRange);

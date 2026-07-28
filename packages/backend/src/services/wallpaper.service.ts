@@ -20,9 +20,11 @@ export async function getWallpapersByCategory(
   sort: string,
   page: number,
   wallhavenTags: string[],
-  wallhavenCategories: string
+  wallhavenCategories: string,
+  ratios?: string,
+  atleast?: string
 ): Promise<{ wallpapers: Wallpaper[]; page: number; totalResults: number; lastPage: number }> {
-  const cacheKey = `wallpapers:${category}:${sort}:${page}`;
+  const cacheKey = `wallpapers:${category}:${sort}:${page}:${ratios || "all"}`;
 
   const cached = await cacheGet<{ wallpapers: Wallpaper[]; page: number; totalResults: number; lastPage: number }>(cacheKey);
   if (cached) return cached;
@@ -31,13 +33,15 @@ export async function getWallpapersByCategory(
   const query = wallhavenTags.length > 0 ? wallhavenTags.join(" ") : "";
 
   try {
-    const result = await searchWallhaven(
+    const result = await searchWallhaven({
       query,
-      wallhavenCategories,
+      categories: wallhavenCategories,
       sorting,
       page,
-      sorting === "toplist" ? topRange : undefined
-    );
+      topRange: sorting === "toplist" ? topRange : undefined,
+      ratios,
+      atleast,
+    });
 
     const transformed = result.data.map(transformWallhavenImage);
     const wallpapers = validateWallpapers(transformed);
@@ -89,9 +93,11 @@ export async function getWallpaperById(id: string): Promise<Wallpaper> {
 export async function getSimilarWallpapers(
   id: string,
   page: number = 1,
-  limit: number = 24
+  limit: number = 24,
+  ratios?: string,
+  atleast?: string
 ): Promise<{ wallpapers: Wallpaper[]; page: number; totalResults: number; lastPage: number }> {
-  const cacheKey = `similar:${id}:${page}:${limit}`;
+  const cacheKey = `similar:${id}:${page}:${limit}:${ratios || "all"}`;
 
   const cached = await cacheGet<{ wallpapers: Wallpaper[]; page: number; totalResults: number; lastPage: number }>(cacheKey);
   if (cached) return cached;
@@ -101,7 +107,7 @@ export async function getSimilarWallpapers(
     const allTags = wallpaper.tags.join(" ");
     const categories = wallpaper.subreddit === "Anime" ? "010" : "110";
 
-    const tagResult = await searchWallhaven(allTags, categories, "relevance", page);
+    const tagResult = await searchWallhaven({ query: allTags, categories, sorting: "relevance", page, ratios, atleast });
     let candidates = tagResult.data
       .map(transformWallhavenImage)
       .filter((w) => w.id !== id);
@@ -109,7 +115,7 @@ export async function getSimilarWallpapers(
 
     if (wallpapers.length < limit) {
       const categoryQuery = wallpaper.subreddit.toLowerCase();
-      const categoryResult = await searchWallhaven(categoryQuery, categories, "relevance", page);
+      const categoryResult = await searchWallhaven({ query: categoryQuery, categories, sorting: "relevance", page, ratios, atleast });
       const seen = new Set(candidates.map((w) => w.id));
       const extra = categoryResult.data
         .map(transformWallhavenImage)
@@ -135,9 +141,11 @@ export async function getSimilarWallpapers(
 export async function searchWallpapers(
   query: string,
   sort: string,
-  page: number
+  page: number,
+  ratios?: string,
+  atleast?: string
 ): Promise<{ wallpapers: Wallpaper[]; query: string; totalResults: number }> {
-  const cacheKey = `search:${query.toLowerCase()}:${sort}:${page}`;
+  const cacheKey = `search:${query.toLowerCase()}:${sort}:${page}:${ratios || "all"}`;
 
   const cached = await cacheGet<{ wallpapers: Wallpaper[]; query: string; totalResults: number }>(cacheKey);
   if (cached) return cached;
@@ -145,13 +153,15 @@ export async function searchWallpapers(
   const { sorting, topRange } = mapSortParam(sort);
 
   try {
-    const result = await searchWallhaven(
+    const result = await searchWallhaven({
       query,
-      "111",
+      categories: "111",
       sorting,
       page,
-      sorting === "toplist" ? topRange : undefined
-    );
+      topRange: sorting === "toplist" ? topRange : undefined,
+      ratios,
+      atleast,
+    });
 
     const transformed = result.data.map(transformWallhavenImage);
     const wallpapers = validateWallpapers(transformed);

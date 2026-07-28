@@ -11,6 +11,8 @@ interface WallpaperQuery {
   category?: string;
   sort?: string;
   page?: string;
+  ratios?: string;
+  atleast?: string;
 }
 
 interface BatchQuery {
@@ -24,6 +26,8 @@ interface WallpaperParams {
 interface SimilarQuery {
   page?: string;
   limit?: string;
+  ratios?: string;
+  atleast?: string;
 }
 
 export async function getSimilar(
@@ -31,12 +35,12 @@ export async function getSimilar(
   reply: FastifyReply
 ) {
   const { id } = request.params;
-  const { page = "1", limit = "24" } = request.query;
+  const { page = "1", limit = "24", ratios, atleast } = request.query;
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
   const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10) || 24));
 
   try {
-    return await getSimilarWallpapers(id, pageNum, limitNum);
+    return await getSimilarWallpapers(id, pageNum, limitNum, ratios, atleast);
   } catch (error) {
     request.log.error(error);
     return reply.status(502).send({ error: "Failed to fetch similar wallpapers" });
@@ -47,6 +51,8 @@ interface SearchQuery {
   q?: string;
   sort?: string;
   page?: string;
+  ratios?: string;
+  atleast?: string;
 }
 
 export async function getWallpapers(
@@ -57,6 +63,8 @@ export async function getWallpapers(
     category = "trending",
     sort = "hot",
     page = "1",
+    ratios,
+    atleast,
   } = request.query;
 
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
@@ -72,7 +80,9 @@ export async function getWallpapers(
       sort,
       pageNum,
       cat.wallhavenTags,
-      cat.wallhavenCategories
+      cat.wallhavenCategories,
+      ratios,
+      atleast
     );
   } catch (error: any) {
     request.log.error(error);
@@ -134,7 +144,7 @@ export async function search(
   request: FastifyRequest<{ Querystring: SearchQuery }>,
   reply: FastifyReply
 ) {
-  const { q, sort = "relevance", page = "1" } = request.query;
+  const { q, sort = "relevance", page = "1", ratios, atleast } = request.query;
 
   if (!q || q.trim().length === 0) {
     return reply.status(400).send({ error: "Search query is required" });
@@ -143,7 +153,7 @@ export async function search(
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
 
   try {
-    return await searchWallpapers(q.trim(), sort, pageNum);
+    return await searchWallpapers(q.trim(), sort, pageNum, ratios, atleast);
   } catch (error: any) {
     request.log.error(error);
     if (error?.statusCode === 429) {

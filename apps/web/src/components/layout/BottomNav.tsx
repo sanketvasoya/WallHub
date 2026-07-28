@@ -12,11 +12,16 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Divider,
+  ToggleButtonGroup,
+  ToggleButton,
 } from "@mui/material";
+import { PhoneIphone, DesktopWindows, Wallpaper } from "@mui/icons-material";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { mobileNavItems, moreMenuItems, isActive } from "@/lib/nav";
+import { useOrientation } from "@/hooks/useOrientation";
 
 export default function BottomNav() {
   const pathname = usePathname();
@@ -24,6 +29,7 @@ export default function BottomNav() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [moreOpen, setMoreOpen] = useState(false);
+  const { resolved: orientation, setPreference: setOrientation } = useOrientation();
 
   const matchIndex = mobileNavItems.findIndex((item) => isActive(item.href, pathname));
 
@@ -166,6 +172,50 @@ export default function BottomNav() {
               );
             })}
           </List>
+          <Divider sx={{ mx: 1, my: 1, opacity: 0.08 }} />
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ px: 2, mb: 1, display: "block", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", fontSize: "0.65rem" }}
+          >
+            Wallpaper Orientation
+          </Typography>
+          <Box sx={{ px: 2, pb: 1 }}>
+            <ToggleButtonGroup
+              value={orientation}
+              exclusive
+              onChange={(_, val) => val && setOrientation(val)}
+              fullWidth
+              size="small"
+              sx={{
+                "& .MuiToggleButton-root": {
+                  textTransform: "none",
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  gap: 0.5,
+                  py: 1,
+                  "&.Mui-selected": {
+                    bgcolor: "primary.main",
+                    color: "white",
+                    "&:hover": { bgcolor: "primary.dark" },
+                  },
+                },
+              }}
+            >
+              <ToggleButton value="phone">
+                <PhoneIphone sx={{ fontSize: 18 }} />
+                Phone
+              </ToggleButton>
+              <ToggleButton value="desktop">
+                <DesktopWindows sx={{ fontSize: 18 }} />
+                Desktop
+              </ToggleButton>
+              <ToggleButton value="all">
+                <Wallpaper sx={{ fontSize: 18 }} />
+                All
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
         </Box>
       </Drawer>
     </>

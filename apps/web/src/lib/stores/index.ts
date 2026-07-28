@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { get, set, del, keys } from "idb-keyval";
-import type { ThemeMode, SortOption } from "@/types";
+import type { ThemeMode, SortOption, OrientationPreference } from "@/types";
 import type { DownloadHistoryEntry } from "@wallhub/types";
 
 type GridDensity = "compact" | "comfortable" | "spacious";
@@ -11,6 +11,8 @@ interface SettingsState {
   setTheme: (theme: ThemeMode) => void;
   gridDensity: GridDensity;
   setGridDensity: (density: GridDensity) => void;
+  orientation: OrientationPreference;
+  setOrientation: (orientation: OrientationPreference) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -20,6 +22,8 @@ export const useSettingsStore = create<SettingsState>()(
       setTheme: (theme) => set({ theme }),
       gridDensity: "comfortable" as GridDensity,
       setGridDensity: (gridDensity) => set({ gridDensity }),
+      orientation: "all" as OrientationPreference,
+      setOrientation: (orientation) => set({ orientation }),
     }),
     { name: "wallhub-settings" }
   )

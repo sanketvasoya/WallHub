@@ -14,6 +14,7 @@ import ErrorState from "@/components/ui/ErrorState";
 import { useWallpapers, useCategory } from "@/hooks/useQueries";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useSortPersistenceStore } from "@/lib/stores";
+import { useOrientation } from "@/hooks/useOrientation";
 import type { SortOption } from "@/types";
 
 const sortOptions: { value: SortOption; label: string; icon: React.ReactNode }[] = [
@@ -35,6 +36,7 @@ function CategoryContent() {
     orientation: "any",
   });
 
+  const { ratios, atleast } = useOrientation();
   const { data: categoryData } = useCategory(slug);
 
   useEffect(() => {
@@ -50,7 +52,7 @@ function CategoryContent() {
     setFilters((prev) => ({ ...prev, sort: value }));
   };
 
-  const { data, isLoading, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useWallpapers(slug, sort);
+  const { data, isLoading, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useWallpapers(slug, sort, ratios, atleast);
 
   const rawWallpapers = data?.pages.flatMap((p) => p.wallpapers) ?? [];
 

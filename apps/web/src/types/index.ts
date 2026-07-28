@@ -14,3 +14,4 @@ export interface Category {
 
 export type ThemeMode = "light" | "dark" | "system";
 export type SortOption = "hot" | "new" | "top" | "relevance";
+export type OrientationPreference = "phone" | "desktop" | "all";

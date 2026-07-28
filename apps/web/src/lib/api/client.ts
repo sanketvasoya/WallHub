@@ -43,10 +43,12 @@ export async function fetchCategory(slug: string): Promise<{ category: Category 
 export async function fetchWallpapers(
   category: string,
   sort: string = "hot",
-  page: number = 1
+  page: number = 1,
+  ratios?: string,
+  atleast?: string
 ): Promise<WallpapersResponse> {
   const { data } = await api.get<WallpapersResponse>("/wallpapers", {
-    params: { category, sort, page, limit: 30 },
+    params: { category, sort, page, limit: 30, ...(ratios ? { ratios } : {}), ...(atleast ? { atleast } : {}) },
   });
   return data;
 }
@@ -59,10 +61,12 @@ export async function fetchWallpaper(id: string): Promise<Wallpaper> {
 export async function fetchSimilarWallpapers(
   id: string,
   page: number = 1,
-  limit: number = 24
+  limit: number = 24,
+  ratios?: string,
+  atleast?: string
 ): Promise<WallpapersResponse> {
   const { data } = await api.get<WallpapersResponse>(`/wallpaper/${id}/similar`, {
-    params: { page, limit },
+    params: { page, limit, ...(ratios ? { ratios } : {}), ...(atleast ? { atleast } : {}) },
   });
   return data;
 }
@@ -76,10 +80,12 @@ export async function fetchWallpapersBatch(ids: string[]): Promise<{ wallpapers:
 
 export async function searchWallpapers(
   query: string,
-  sort: string = "relevance"
+  sort: string = "relevance",
+  ratios?: string,
+  atleast?: string
 ): Promise<SearchResponse> {
   const { data } = await api.get<SearchResponse>("/search", {
-    params: { q: query, sort, limit: 50 },
+    params: { q: query, sort, limit: 50, ...(ratios ? { ratios } : {}), ...(atleast ? { atleast } : {}) },
   });
   return data;
 }

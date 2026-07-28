@@ -13,6 +13,7 @@ import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 import ErrorState from "@/components/ui/ErrorState";
 import { useWallpapers, useCollections } from "@/hooks/useQueries";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useOrientation } from "@/hooks/useOrientation";
 import { useMemo } from "react";
 
 const quickCategories = [
@@ -67,6 +68,7 @@ function SectionHeader({ title, icon, onSeeAll }: { title: string; icon: React.R
 
 function HomeContent() {
   const router = useRouter();
+  const { ratios, atleast } = useOrientation();
   const {
     data: wallpapersData,
     isLoading,
@@ -75,20 +77,20 @@ function HomeContent() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useWallpapers("trending", "hot");
+  } = useWallpapers("trending", "hot", ratios, atleast);
   
   const allWallpapers = useMemo(
     () => wallpapersData?.pages.flatMap((p) => p.wallpapers) ?? [],
     [wallpapersData]
   );
 
-  const newArrivals = useWallpapers("trending", "new");
+  const newArrivals = useWallpapers("trending", "new", ratios, atleast);
   const newWallpapers = useMemo(
     () => newArrivals.data?.pages.flatMap((p) => p.wallpapers).slice(0, 8) ?? [],
     [newArrivals.data]
   );
 
-  const editorsPicks = useWallpapers("trending", "top");
+  const editorsPicks = useWallpapers("trending", "top", ratios, atleast);
   const editorWallpapers = useMemo(
     () => editorsPicks.data?.pages.flatMap((p) => p.wallpapers).slice(0, 8) ?? [],
     [editorsPicks.data]

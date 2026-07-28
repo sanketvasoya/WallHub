@@ -34,6 +34,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useWallpaper, useSimilarWallpapers } from "@/hooks/useQueries";
 import { useWallpaperActions } from "@/hooks/useWallpaperActions";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useOrientation } from "@/hooks/useOrientation";
 import WallpaperGrid from "@/components/wallpaper/WallpaperGrid";
 import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 import ErrorState from "@/components/ui/ErrorState";
@@ -65,12 +66,13 @@ function WallpaperViewerContent() {
   const id = (params?.id as string) || "";
 
   const { data: wallpaper, isLoading, isError } = useWallpaper(id);
+  const { ratios, atleast } = useOrientation();
   const {
     data: similarData,
     fetchNextPage: fetchNextSimilar,
     hasNextPage: hasSimilarNext,
     isFetchingNextPage: fetchingSimilar,
-  } = useSimilarWallpapers(id);
+  } = useSimilarWallpapers(id, ratios, atleast);
   const {
     isFavorite,
     handleDownload,

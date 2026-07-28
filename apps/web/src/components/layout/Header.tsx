@@ -17,6 +17,8 @@ import {
   Tooltip,
   TextField,
   InputAdornment,
+  ToggleButtonGroup,
+  ToggleButton,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import {
@@ -26,6 +28,9 @@ import {
   Brightness6,
   Whatshot,
   Search as SearchIcon,
+  PhoneIphone,
+  DesktopWindows,
+  Wallpaper,
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import NextLink from "next/link";
@@ -36,6 +41,8 @@ import SearchBar from "@/components/ui/SearchBar";
 import { navItems, isActive } from "@/lib/nav";
 import { tokens } from "@/lib/tokens";
 import { useCategories } from "@/hooks/useQueries";
+import { useOrientation } from "@/hooks/useOrientation";
+import type { OrientationPreference } from "@/types";
 
 const MotionAppBar = motion.create(AppBar);
 
@@ -55,6 +62,7 @@ export default function Header() {
   const { resolved } = useResolvedTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
   const { data: categoriesData } = useCategories();
+  const { resolved: orientation, setPreference: setOrientation } = useOrientation();
 
   const currentThemeIdx = themeOptions.findIndex((t) => t.value === theme);
   const cycleTheme = () => {
@@ -150,6 +158,49 @@ export default function Header() {
               </IconButton>
             )}
           </Box>
+
+          {!isMobile && (
+            <Tooltip title={`Orientation: ${orientation === "phone" ? "Phone" : orientation === "desktop" ? "Desktop" : "All"}`}>
+              <ToggleButtonGroup
+                value={orientation}
+                exclusive
+                onChange={(_, val) => val && setOrientation(val)}
+                size="small"
+                sx={{
+                  mr: 1,
+                  "& .MuiToggleButton-root": {
+                    px: 1.25,
+                    py: 0.5,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    borderRadius: "8px !important",
+                    textTransform: "none",
+                    fontSize: "0.7rem",
+                    fontWeight: 600,
+                    gap: 0.5,
+                    "&.Mui-selected": {
+                      bgcolor: "primary.main",
+                      color: "white",
+                      "&:hover": { bgcolor: "primary.dark" },
+                    },
+                  },
+                }}
+              >
+                <ToggleButton value="phone">
+                  <PhoneIphone sx={{ fontSize: 16 }} />
+                  Phone
+                </ToggleButton>
+                <ToggleButton value="desktop">
+                  <DesktopWindows sx={{ fontSize: 16 }} />
+                  Desktop
+                </ToggleButton>
+                <ToggleButton value="all">
+                  <Wallpaper sx={{ fontSize: 16 }} />
+                  All
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Tooltip>
+          )}
 
           <Tooltip title={`Theme: ${themeOptions[currentThemeIdx]?.label}`}>
             <IconButton

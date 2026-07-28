@@ -13,6 +13,7 @@ import WallpaperGrid from "@/components/wallpaper/WallpaperGrid";
 import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 import ErrorState from "@/components/ui/ErrorState";
 import { useSearch } from "@/hooks/useQueries";
+import { useOrientation } from "@/hooks/useOrientation";
 import type { SortOption } from "@/types";
 
 const PAGE_SIZE = 20;
@@ -32,7 +33,8 @@ function SearchContent() {
   });
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  const { data, isLoading, isError, refetch } = useSearch(debouncedQuery, filters.sort);
+  const { ratios, atleast } = useOrientation();
+  const { data, isLoading, isError, refetch } = useSearch(debouncedQuery, filters.sort, ratios, atleast);
   const allWallpapers = data?.wallpapers ?? [];
 
   // Filter client-side if orientation filter selected
