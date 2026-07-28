@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  Drawer,
+  Dialog,
   Box,
   Typography,
   IconButton,
@@ -10,9 +10,11 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   Divider,
+  useTheme,
 } from "@mui/material";
-import { Close, FilterList, Refresh } from "@mui/icons-material";
+import { X, SlidersHorizontal, RotateCcw } from "lucide-react";
 import { useState } from "react";
+import { tokens } from "@/lib/tokens";
 import type { SortOption } from "@/types";
 
 export interface FilterState {
@@ -30,6 +32,7 @@ interface FilterSheetProps {
 }
 
 const sortOptions: { value: SortOption; label: string }[] = [
+  { value: "relevance", label: "Relevance" },
   { value: "hot", label: "Hot" },
   { value: "new", label: "New" },
   { value: "top", label: "Top" },
@@ -49,13 +52,9 @@ const orientationOptions = [
   { value: "square", label: "Square" },
 ];
 
-export default function FilterSheet({
-  open,
-  onClose,
-  filters,
-  onApply,
-  onReset,
-}: FilterSheetProps) {
+export default function FilterSheet({ open, onClose, filters, onApply, onReset }: FilterSheetProps) {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
   const [localFilters, setLocalFilters] = useState<FilterState>(filters);
 
   const handleSortChange = (_: unknown, val: SortOption | null) => {
@@ -72,52 +71,68 @@ export default function FilterSheet({
     setLocalFilters({ sort: "hot", resolution: "any", orientation: "any" });
   };
 
+  const sectionLabel = {
+    fontSize: "0.7rem",
+    fontWeight: 700,
+    letterSpacing: "0.08em",
+    textTransform: "uppercase" as const,
+    color: "text.secondary",
+    mb: 1.5,
+  };
+
   return (
-    <Drawer
-      anchor="bottom"
+    <Dialog
       open={open}
       onClose={onClose}
-      PaperProps={{
-        sx: {
-          borderRadius: "24px 24px 0 0",
-          maxHeight: "85vh",
-          bgcolor: (theme) =>
-            theme.palette.mode === "dark" ? "rgba(14,14,22,0.98)" : "rgba(255,255,255,0.98)",
-          backdropFilter: "blur(40px)",
+      maxWidth="xs"
+      fullWidth
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: tokens.radius["2xl"],
+            m: 2,
+            maxHeight: "85vh",
+            background: isDark ? "rgba(18,18,24,0.98)" : "rgba(255,255,255,0.98)",
+            backdropFilter: "blur(40px)",
+            WebkitBackdropFilter: "blur(40px)",
+          },
+        },
+        backdrop: {
+          sx: {
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+          },
         },
       }}
     >
-      <Box sx={{ p: 3, maxWidth: 500, mx: "auto", width: "100%" }}>
-        {/* Handle */}
-        <Box
-          sx={{
-            width: 36,
-            height: 4,
-            bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.12)"),
-            borderRadius: 2,
-            mx: "auto",
-            mb: 2,
-          }}
-        />
-
+      <Box sx={{ p: 3, maxWidth: 460, mx: "auto", width: "100%" }}>
         {/* Header */}
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <FilterList sx={{ color: "primary.main" }} />
-            <Typography variant="h6" fontWeight={700}>
+            <SlidersHorizontal size={18} color={tokens.color.primary} strokeWidth={2.5} />
+            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: "1rem", letterSpacing: "-0.01em" }}>
               Filters & Sorting
             </Typography>
           </Box>
-          <IconButton size="small" onClick={onClose} aria-label="Close filters">
-            <Close />
+          <IconButton
+            size="small"
+            onClick={onClose}
+            aria-label="Close filters"
+            sx={{
+              width: 32,
+              height: 32,
+              borderRadius: tokens.radius.sm,
+              bgcolor: isDark ? tokens.color.surfaceDark : tokens.color.surfaceLight,
+              "&:hover": { bgcolor: isDark ? tokens.color.surfaceDarkHover : tokens.color.surfaceLightHover },
+            }}
+          >
+            <X size={16} strokeWidth={2} />
           </IconButton>
         </Box>
 
         {/* Sorting */}
         <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5, fontWeight: 600 }}>
-            SORT BY
-          </Typography>
+          <Typography sx={sectionLabel}>Sort By</Typography>
           <ToggleButtonGroup
             value={localFilters.sort}
             exclusive
@@ -126,21 +141,19 @@ export default function FilterSheet({
             size="small"
           >
             {sortOptions.map((opt) => (
-              <ToggleButton key={opt.value} value={opt.value}>
+              <ToggleButton key={opt.value} value={opt.value} sx={{ borderRadius: `${tokens.radius.md}px !important` }}>
                 {opt.label}
               </ToggleButton>
             ))}
           </ToggleButtonGroup>
         </Box>
 
-        <Divider sx={{ my: 2.5, opacity: 0.08 }} />
+        <Divider sx={{ my: 2.5, opacity: isDark ? 0.08 : 0.06 }} />
 
         {/* Orientation */}
         <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5, fontWeight: 600 }}>
-            ASPECT RATIO
-          </Typography>
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+          <Typography sx={sectionLabel}>Aspect Ratio</Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
             {orientationOptions.map((opt) => (
               <Chip
                 key={opt.value}
@@ -148,20 +161,18 @@ export default function FilterSheet({
                 onClick={() => setLocalFilters((prev) => ({ ...prev, orientation: opt.value }))}
                 color={localFilters.orientation === opt.value ? "primary" : "default"}
                 variant={localFilters.orientation === opt.value ? "filled" : "outlined"}
-                sx={{ borderRadius: 2, cursor: "pointer", fontWeight: 600 }}
+                sx={{ borderRadius: "10px", cursor: "pointer", fontWeight: 600, fontSize: "0.8rem" }}
               />
             ))}
           </Box>
         </Box>
 
-        <Divider sx={{ my: 2.5, opacity: 0.08 }} />
+        <Divider sx={{ my: 2.5, opacity: isDark ? 0.08 : 0.06 }} />
 
         {/* Resolution */}
         <Box sx={{ mb: 4 }}>
-          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5, fontWeight: 600 }}>
-            MINIMUM RESOLUTION
-          </Typography>
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+          <Typography sx={sectionLabel}>Minimum Resolution</Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
             {resolutionOptions.map((opt) => (
               <Chip
                 key={opt.value}
@@ -169,31 +180,31 @@ export default function FilterSheet({
                 onClick={() => setLocalFilters((prev) => ({ ...prev, resolution: opt.value }))}
                 color={localFilters.resolution === opt.value ? "primary" : "default"}
                 variant={localFilters.resolution === opt.value ? "filled" : "outlined"}
-                sx={{ borderRadius: 2, cursor: "pointer", fontWeight: 600 }}
+                sx={{ borderRadius: "10px", cursor: "pointer", fontWeight: 600, fontSize: "0.8rem" }}
               />
             ))}
           </Box>
         </Box>
 
-        {/* Footer Actions */}
+        {/* Footer */}
         <Box sx={{ display: "flex", gap: 1.5 }}>
           <Button
             variant="outlined"
             onClick={handleReset}
-            startIcon={<Refresh />}
-            sx={{ flex: 1, borderRadius: 3 }}
+            startIcon={<RotateCcw size={16} strokeWidth={2} />}
+            sx={{ flex: 1, borderRadius: tokens.radius.lg }}
           >
             Reset
           </Button>
           <Button
             variant="contained"
             onClick={handleApply}
-            sx={{ flex: 2, borderRadius: 3 }}
+            sx={{ flex: 2, borderRadius: tokens.radius.lg }}
           >
             Apply Filters
           </Button>
         </Box>
       </Box>
-    </Drawer>
+    </Dialog>
   );
 }

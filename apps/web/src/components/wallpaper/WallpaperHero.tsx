@@ -2,7 +2,7 @@
 
 import { Box, Typography, useTheme } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import SearchBar from "@/components/ui/SearchBar";
 import { tokens } from "@/lib/tokens";
 import type { Wallpaper } from "@/types";
@@ -20,13 +20,15 @@ export default function WallpaperHero({ wallpapers = [] }: WallpaperHeroProps) {
 
   const heroItems = wallpapers.slice(0, 5);
 
+  const next = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % heroItems.length);
+  }, [heroItems.length]);
+
   useEffect(() => {
     if (heroItems.length <= 1) return;
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % heroItems.length);
-    }, 7000);
+    const interval = setInterval(next, 7000);
     return () => clearInterval(interval);
-  }, [heroItems.length]);
+  }, [heroItems.length, next]);
 
   const currentWallpaper = heroItems[currentIndex];
 
@@ -35,7 +37,7 @@ export default function WallpaperHero({ wallpapers = [] }: WallpaperHeroProps) {
       <MotionBox
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 0.8, ease: tokens.animation.curve.standard }}
         sx={{
           position: "relative",
           height: { xs: 380, sm: 440, md: 520 },
@@ -43,27 +45,27 @@ export default function WallpaperHero({ wallpapers = [] }: WallpaperHeroProps) {
           alignItems: "flex-end",
           justifyContent: "center",
           overflow: "hidden",
-          borderRadius: { xs: 0, sm: 4, md: 4 },
+          borderRadius: { xs: 0, sm: tokens.radius["2xl"], md: tokens.radius["2xl"] },
         }}
       >
-        {/* Background Image Carousel or Gradient Fallback */}
+        {/* Background image carousel or fallback gradient */}
         <AnimatePresence mode="wait">
           {currentWallpaper ? (
             <motion.img
               key={currentWallpaper.id}
-              initial={{ opacity: 0, scale: 1.05 }}
+              initial={{ opacity: 0, scale: 1.06 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 1 }}
+              transition={{ duration: 1.2, ease: tokens.animation.curve.standard }}
               src={currentWallpaper.preview || currentWallpaper.image}
-              alt="Hero Wallpaper Backdrop"
+              alt="Hero wallpaper backdrop"
               style={{
                 position: "absolute",
                 inset: 0,
                 width: "100%",
                 height: "100%",
                 objectFit: "cover",
-                filter: "brightness(0.55)",
+                filter: "brightness(0.5) saturate(1.1)",
               }}
             />
           ) : (
@@ -73,26 +75,26 @@ export default function WallpaperHero({ wallpapers = [] }: WallpaperHeroProps) {
                 position: "absolute",
                 inset: 0,
                 background: isDark
-                  ? "linear-gradient(160deg, #0a0020 0%, #15003a 25%, #001a2e 50%, #05050a 100%)"
-                  : "linear-gradient(160deg, #e8eaf6 0%, #e3f2fd 25%, #f3e5f5 50%, #f8f8fc 100%)",
+                  ? `linear-gradient(160deg, ${tokens.color.bgDark} 0%, #12083a 30%, #0a1628 60%, ${tokens.color.bgDark} 100%)`
+                  : `linear-gradient(160deg, #eef0ff 0%, #e8ecff 30%, #f5f0ff 60%, ${tokens.color.bgLight} 100%)`,
               }}
             />
           )}
         </AnimatePresence>
 
-        {/* Ambient Overlay Gradients */}
+        {/* Ambient overlay */}
         <Box
           sx={{
             position: "absolute",
             inset: 0,
             background: isDark
-              ? tokens.gradient.hero
-              : tokens.gradient.heroLight,
+              ? `linear-gradient(180deg, transparent 0%, rgba(9,9,11,0.4) 40%, rgba(9,9,11,0.95) 100%)`
+              : `linear-gradient(180deg, transparent 0%, rgba(250,251,255,0.4) 40%, rgba(250,251,255,0.95) 100%)`,
             zIndex: 1,
           }}
         />
 
-        {/* Hero Content */}
+        {/* Hero content */}
         <Box
           sx={{
             position: "relative",
@@ -104,31 +106,36 @@ export default function WallpaperHero({ wallpapers = [] }: WallpaperHeroProps) {
           }}
         >
           <MotionBox
-            initial={{ y: 30, opacity: 0 }}
+            initial={{ y: 32, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: 0.65, delay: 0.1, ease: tokens.animation.curve.standard }}
           >
             <Typography
               variant="h1"
-              fontWeight={800}
               sx={{
-                fontSize: { xs: "2.2rem", sm: "3rem", md: "3.8rem" },
-                mb: 1.5,
+                fontWeight: 800,
+                fontSize: { xs: "2rem", sm: "2.75rem", md: "3.5rem" },
+                letterSpacing: "-0.035em",
                 lineHeight: 1.1,
-                background: currentWallpaper ? "linear-gradient(135deg, #ffffff, #e0e0e0)" : tokens.gradient.text,
+                mb: 1.5,
+                background: currentWallpaper
+                  ? "linear-gradient(135deg, #ffffff 0%, #e2e2e2 100%)"
+                  : tokens.gradient.text,
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
-                dropShadow: "0 2px 10px rgba(0,0,0,0.5)",
+                textShadow: currentWallpaper ? "none" : "none",
               }}
             >
-              Discover Wallpapers
+              Discover Beautiful
+              <br />
+              Wallpapers
             </Typography>
           </MotionBox>
 
           <MotionBox
-            initial={{ y: 30, opacity: 0 }}
+            initial={{ y: 32, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: 0.65, delay: 0.25, ease: tokens.animation.curve.standard }}
           >
             <Typography
               variant="body1"
@@ -138,46 +145,60 @@ export default function WallpaperHero({ wallpapers = [] }: WallpaperHeroProps) {
                 mx: "auto",
                 fontWeight: 500,
                 lineHeight: 1.6,
-                fontSize: { xs: "0.95rem", sm: "1rem" },
-                color: currentWallpaper ? "rgba(255,255,255,0.85)" : "text.secondary",
-                textShadow: currentWallpaper ? "0 1px 4px rgba(0,0,0,0.6)" : "none",
+                fontSize: { xs: "0.9rem", sm: "1rem" },
+                color: currentWallpaper ? "rgba(255,255,255,0.8)" : "text.secondary",
+                letterSpacing: "0.005em",
               }}
             >
               Stunning wallpapers in 4K resolution.
+              <br />
               Free to download, curated for high performance.
             </Typography>
           </MotionBox>
 
           <MotionBox
-            initial={{ y: 30, opacity: 0 }}
+            initial={{ y: 32, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: 0.65, delay: 0.4, ease: tokens.animation.curve.standard }}
             sx={{ display: "flex", justifyContent: "center" }}
           >
             <SearchBar />
           </MotionBox>
 
-          {/* Carousel Indicators */}
+          {/* Carousel indicators */}
           {heroItems.length > 1 && (
             <Box
               sx={{
                 display: "flex",
                 justifyContent: "center",
-                gap: 1,
+                gap: 0.75,
                 mt: 3,
               }}
             >
-              {heroItems.map((_, i) => (
+              {heroItems.map((item, i) => (
                 <Box
-                  key={i}
+                  key={item.id}
                   onClick={() => setCurrentIndex(i)}
                   sx={{
-                    width: i === currentIndex ? 24 : 8,
+                    width: i === currentIndex ? 28 : 8,
                     height: 8,
-                    borderRadius: 4,
-                    bgcolor: i === currentIndex ? "primary.main" : "rgba(255,255,255,0.4)",
+                    borderRadius: "8px",
+                    bgcolor:
+                      i === currentIndex
+                        ? tokens.color.primary
+                        : isDark
+                          ? "rgba(255,255,255,0.25)"
+                          : "rgba(0,0,0,0.2)",
                     cursor: "pointer",
-                    transition: "all 0.3s ease",
+                    transition: "all 0.4s cubic-bezier(0.16,1,0.3,1)",
+                    "&:hover": {
+                      bgcolor:
+                        i === currentIndex
+                          ? tokens.color.primary
+                          : isDark
+                            ? "rgba(255,255,255,0.4)"
+                            : "rgba(0,0,0,0.35)",
+                    },
                   }}
                 />
               ))}

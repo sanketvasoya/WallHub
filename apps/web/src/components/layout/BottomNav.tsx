@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   BottomNavigation,
   BottomNavigationAction,
   Paper,
-  Drawer,
   Box,
   Typography,
   List,
@@ -15,35 +14,43 @@ import {
   Divider,
   ToggleButtonGroup,
   ToggleButton,
+  Drawer,
+  useMediaQuery,
 } from "@mui/material";
-import { PhoneIphone, DesktopWindows, Wallpaper } from "@mui/icons-material";
-import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "@mui/material/styles";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import { mobileNavItems, moreMenuItems, isActive } from "@/lib/nav";
+import { Smartphone, Monitor, Layers } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { mobileNavItems, isActive } from "@/lib/nav";
 import { useOrientation } from "@/hooks/useOrientation";
+import { tokens } from "@/lib/tokens";
 
 export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const muiTheme = useTheme();
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
   const [moreOpen, setMoreOpen] = useState(false);
   const { resolved: orientation, setPreference: setOrientation } = useOrientation();
 
   const matchIndex = mobileNavItems.findIndex((item) => isActive(item.href, pathname));
 
+  const handleNavChange = useCallback(
+    (_: unknown, newValue: number) => {
+      const item = mobileNavItems[newValue];
+      if (!item) return;
+      if (item.href === "__more__") {
+        setMoreOpen(true);
+      } else {
+        router.push(item.href);
+      }
+    },
+    [router]
+  );
+
   if (!isMobile) return null;
 
-  const handleNavChange = (_: unknown, newValue: number) => {
-    const item = mobileNavItems[newValue];
-    if (!item) return;
-    if (item.href === "__more__") {
-      setMoreOpen(true);
-    } else {
-      router.push(item.href);
-    }
-  };
+  const isDark = muiTheme.palette.mode === "dark";
 
   return (
     <>
@@ -57,15 +64,13 @@ export default function BottomNav() {
           zIndex: 1200,
           borderTop: "none",
           bgcolor: "transparent",
-          backdropFilter: "blur(24px) saturate(1.6)",
-          WebkitBackdropFilter: "blur(24px) saturate(1.6)",
+          backdropFilter: "blur(24px) saturate(1.8)",
+          WebkitBackdropFilter: "blur(24px) saturate(1.8)",
           "&::before": {
             content: '""',
             position: "absolute",
             inset: 0,
-            bgcolor: theme.palette.mode === "dark"
-              ? "rgba(5,5,10,0.88)"
-              : "rgba(248,248,252,0.88)",
+            bgcolor: isDark ? "rgba(9, 9, 11, 0.85)" : "rgba(250, 251, 255, 0.85)",
             borderRadius: 0,
           },
         }}
@@ -77,25 +82,30 @@ export default function BottomNav() {
           sx={{
             position: "relative",
             bgcolor: "transparent",
-            height: 64,
+            height: 68,
+            pb: 0.5,
             "& .MuiBottomNavigationAction-root": {
               minWidth: 0,
-              py: 1,
+              py: 0.75,
               gap: 0.25,
-              transition: "all 0.25s ease",
+              transition: "all 0.2s ease",
+              borderRadius: "12px",
+              mx: 0.5,
               "&.Mui-selected": {
                 color: "primary.main",
                 "& .MuiBottomNavigationAction-label": {
                   fontWeight: 700,
-                  fontSize: "0.65rem",
+                  fontSize: "0.62rem",
                 },
               },
               "& .MuiBottomNavigationAction-label": {
-                fontSize: "0.6rem",
+                fontSize: "0.58rem",
                 fontWeight: 500,
                 mt: 0.25,
+                opacity: 0.6,
                 "&.Mui-selected": {
-                  fontSize: "0.65rem",
+                  fontSize: "0.62rem",
+                  opacity: 1,
                 },
               },
             },
@@ -107,7 +117,7 @@ export default function BottomNav() {
               <BottomNavigationAction
                 key={item.href}
                 label={item.mobileLabel}
-                icon={<Icon sx={{ fontSize: 22 }} />}
+                icon={<Icon size={21} />}
                 aria-label={item.label}
               />
             );
@@ -121,9 +131,12 @@ export default function BottomNav() {
         onClose={() => setMoreOpen(false)}
         PaperProps={{
           sx: {
-            borderRadius: "24px 24px 0 0",
-            bgcolor: theme.palette.mode === "dark" ? "rgba(14,14,22,0.98)" : "rgba(255,255,255,0.98)",
-            backdropFilter: "blur(40px)",
+            borderRadius: "20px 20px 0 0",
+            bgcolor: isDark
+              ? "rgba(9, 9, 11, 0.96)"
+              : "rgba(250, 251, 255, 0.96)",
+            backdropFilter: "blur(40px) saturate(1.8)",
+            WebkitBackdropFilter: "blur(40px) saturate(1.8)",
           },
         }}
       >
@@ -132,17 +145,27 @@ export default function BottomNav() {
             sx={{
               width: 36,
               height: 4,
-              bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.12)",
+              bgcolor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)",
               borderRadius: 2,
               mx: "auto",
-              mb: 2,
+              mb: 2.5,
             }}
           />
-          <Typography variant="subtitle2" color="text.secondary" fontWeight={600} sx={{ mb: 1, fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          <Typography
+            variant="subtitle2"
+            color="text.secondary"
+            fontWeight={600}
+            sx={{
+              mb: 1.5,
+              fontSize: "0.7rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+            }}
+          >
             More
           </Typography>
           <List>
-            {moreMenuItems.map((item) => {
+            {mobileNavItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href, pathname);
               return (
@@ -154,29 +177,48 @@ export default function BottomNav() {
                     setMoreOpen(false);
                   }}
                   sx={{
-                    borderRadius: 2.5,
+                    borderRadius: "12px",
                     py: 1.25,
                     "&.Mui-selected": {
-                      bgcolor: theme.palette.mode === "dark" ? "rgba(124,77,255,0.12)" : "rgba(98,0,234,0.08)",
+                      bgcolor: isDark
+                        ? tokens.color.primaryAlpha15
+                        : tokens.color.primaryAlpha10,
                     },
+                    "&:hover": { bgcolor: "action.hover" },
                   }}
                 >
                   <ListItemIcon sx={{ minWidth: 38 }}>
-                    <Icon sx={{ fontSize: 21, color: active ? "primary.main" : "text.secondary" }} />
+                    <Icon
+                      size={19}
+                      style={{ color: active ? tokens.color.primary : undefined }}
+                      className={active ? "" : "MuiTypography-colorSecondary"}
+                    />
                   </ListItemIcon>
                   <ListItemText
                     primary={item.label}
-                    primaryTypographyProps={{ fontWeight: active ? 600 : 500, fontSize: "0.9rem" }}
+                    primaryTypographyProps={{
+                      fontWeight: active ? 600 : 500,
+                      fontSize: "0.9rem",
+                      color: active ? "text.primary" : "text.secondary",
+                    }}
                   />
                 </ListItemButton>
               );
             })}
           </List>
-          <Divider sx={{ mx: 1, my: 1, opacity: 0.08 }} />
+          <Divider sx={{ mx: 1, my: 1, opacity: 0.06 }} />
           <Typography
             variant="caption"
             color="text.secondary"
-            sx={{ px: 2, mb: 1, display: "block", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", fontSize: "0.65rem" }}
+            sx={{
+              px: 2,
+              mb: 1,
+              display: "block",
+              fontWeight: 600,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              fontSize: "0.65rem",
+            }}
           >
             Wallpaper Orientation
           </Typography>
@@ -194,24 +236,26 @@ export default function BottomNav() {
                   fontWeight: 600,
                   gap: 0.5,
                   py: 1,
+                  borderRadius: "12px !important",
                   "&.Mui-selected": {
                     bgcolor: "primary.main",
                     color: "white",
+                    borderColor: "primary.main",
                     "&:hover": { bgcolor: "primary.dark" },
                   },
                 },
               }}
             >
               <ToggleButton value="phone">
-                <PhoneIphone sx={{ fontSize: 18 }} />
+                <Smartphone size={16} />
                 Phone
               </ToggleButton>
               <ToggleButton value="desktop">
-                <DesktopWindows sx={{ fontSize: 18 }} />
+                <Monitor size={16} />
                 Desktop
               </ToggleButton>
               <ToggleButton value="all">
-                <Wallpaper sx={{ fontSize: 18 }} />
+                <Layers size={16} />
                 All
               </ToggleButton>
             </ToggleButtonGroup>

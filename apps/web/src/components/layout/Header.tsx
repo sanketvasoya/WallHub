@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   AppBar,
   Toolbar,
@@ -12,26 +12,28 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  useMediaQuery,
   Divider,
   Tooltip,
   TextField,
   InputAdornment,
   ToggleButtonGroup,
   ToggleButton,
+  useMediaQuery,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import {
   Menu,
-  DarkMode,
-  LightMode,
-  Brightness6,
-  Whatshot,
+  X,
   Search as SearchIcon,
-  PhoneIphone,
-  DesktopWindows,
-  Wallpaper,
-} from "@mui/icons-material";
+  Smartphone,
+  Monitor,
+  Layers,
+  Moon,
+  Sun,
+  MonitorSpeaker,
+  Flame,
+  ChevronRight,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import NextLink from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -42,15 +44,44 @@ import { navItems, isActive } from "@/lib/nav";
 import { tokens } from "@/lib/tokens";
 import { useCategories } from "@/hooks/useQueries";
 import { useOrientation } from "@/hooks/useOrientation";
-import type { OrientationPreference } from "@/types";
+import type { ThemeMode } from "@/types";
 
 const MotionAppBar = motion.create(AppBar);
 
-const themeOptions = [
-  { value: "dark" as const, icon: <DarkMode sx={{ fontSize: 20 }} />, label: "Dark" },
-  { value: "light" as const, icon: <LightMode sx={{ fontSize: 20 }} />, label: "Light" },
-  { value: "system" as const, icon: <Brightness6 sx={{ fontSize: 20 }} />, label: "System" },
+const themeOptions: { value: ThemeMode; icon: React.ReactNode; label: string }[] = [
+  { value: "dark", icon: <Moon size={18} />, label: "Dark" },
+  { value: "light", icon: <Sun size={18} />, label: "Light" },
+  { value: "system", icon: <MonitorSpeaker size={18} />, label: "System" },
 ];
+
+const drawerVariants = {
+  hidden: { x: "-100%", opacity: 0 },
+  visible: {
+    x: 0,
+    opacity: 1,
+    transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] as const },
+  },
+  exit: {
+    x: "-100%",
+    opacity: 0,
+    transition: { duration: 0.2, ease: [0.4, 0, 1, 1] as const },
+  },
+};
+
+const overlayVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.15 } },
+};
+
+const listItemVariants = {
+  hidden: { opacity: 0, x: -12 },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: { delay: i * 0.03, duration: 0.3, ease: [0.16, 1, 0.3, 1] as const },
+  }),
+};
 
 export default function Header() {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -65,10 +96,10 @@ export default function Header() {
   const { resolved: orientation, setPreference: setOrientation } = useOrientation();
 
   const currentThemeIdx = themeOptions.findIndex((t) => t.value === theme);
-  const cycleTheme = () => {
+  const cycleTheme = useCallback(() => {
     const next = (currentThemeIdx + 1) % themeOptions.length;
     setTheme(themeOptions[next]!.value);
-  };
+  }, [currentThemeIdx, setTheme]);
 
   const filteredCategories = useMemo(() => {
     if (!categoriesData?.categories) return [];
@@ -82,26 +113,40 @@ export default function Header() {
     );
   }, [categoriesData?.categories, categorySearch]);
 
+  const handleNav = useCallback(
+    (href: string) => {
+      router.push(href);
+      setDrawerOpen(false);
+    },
+    [router]
+  );
+
   return (
     <>
       <MotionAppBar
         position="sticky"
-        initial={{ y: -60 }}
+        initial={{ y: -64 }}
         animate={{ y: 0 }}
-        transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as const }}
         elevation={0}
         sx={{
           bgcolor: "transparent",
           borderBottom: "none",
-          backdropFilter: "blur(24px) saturate(1.5)",
-          WebkitBackdropFilter: "blur(24px) saturate(1.5)",
+          backdropFilter: "blur(24px) saturate(1.8)",
+          WebkitBackdropFilter: "blur(24px) saturate(1.8)",
           backgroundColor: (t) =>
             t.palette.mode === "dark"
-              ? "rgba(5,5,10,0.8)"
-              : "rgba(248,248,252,0.8)",
+              ? "rgba(9, 9, 11, 0.78)"
+              : "rgba(250, 251, 255, 0.78)",
         }}
       >
-        <Toolbar sx={{ gap: 1, px: { xs: 1.5, sm: 3 }, minHeight: { xs: 56, sm: 64 } }}>
+        <Toolbar
+          sx={{
+            gap: 1,
+            px: { xs: 1.5, sm: 3 },
+            minHeight: { xs: 56, sm: 64 },
+          }}
+        >
           <IconButton
             edge="start"
             aria-label="Open navigation menu"
@@ -112,23 +157,31 @@ export default function Header() {
               "&:hover": { bgcolor: "action.hover" },
             }}
           >
-            <Menu sx={{ fontSize: 22 }} />
+            <Menu size={20} />
           </IconButton>
 
-          <NextLink href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
+          <NextLink
+            href="/"
+            style={{
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
             <Box
               sx={{
                 width: 34,
                 height: 34,
-                borderRadius: 2.5,
+                borderRadius: "10px",
                 background: tokens.gradient.primary,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: `0 4px 16px ${tokens.color.primaryLightCss}`,
+                boxShadow: `0 4px 16px ${tokens.color.primaryAlpha30}`,
               }}
             >
-              <Whatshot sx={{ color: "white", fontSize: 20 }} />
+              <Flame size={18} color="#fff" strokeWidth={2.5} />
             </Box>
             <Typography
               variant="h6"
@@ -139,6 +192,7 @@ export default function Header() {
                 WebkitTextFillColor: "transparent",
                 display: { xs: "none", sm: "block" },
                 fontSize: "1.15rem",
+                letterSpacing: "-0.02em",
               }}
             >
               Wallection
@@ -154,13 +208,15 @@ export default function Header() {
                 onClick={() => router.push("/search")}
                 sx={{ ml: "auto", color: "text.secondary" }}
               >
-                <SearchIcon sx={{ fontSize: 22 }} />
+                <SearchIcon size={20} />
               </IconButton>
             )}
           </Box>
 
           {!isMobile && (
-            <Tooltip title={`Orientation: ${orientation === "phone" ? "Phone" : orientation === "desktop" ? "Desktop" : "All"}`}>
+            <Tooltip
+              title={`Orientation: ${orientation === "phone" ? "Phone" : orientation === "desktop" ? "Desktop" : "All"}`}
+            >
               <ToggleButtonGroup
                 value={orientation}
                 exclusive
@@ -173,29 +229,31 @@ export default function Header() {
                     py: 0.5,
                     border: "1px solid",
                     borderColor: "divider",
-                    borderRadius: "8px !important",
+                    borderRadius: "10px !important",
                     textTransform: "none",
-                    fontSize: "0.7rem",
+                    fontSize: "0.72rem",
                     fontWeight: 600,
                     gap: 0.5,
+                    color: "text.secondary",
                     "&.Mui-selected": {
                       bgcolor: "primary.main",
                       color: "white",
+                      borderColor: "primary.main",
                       "&:hover": { bgcolor: "primary.dark" },
                     },
                   },
                 }}
               >
                 <ToggleButton value="phone">
-                  <PhoneIphone sx={{ fontSize: 16 }} />
+                  <Smartphone size={14} />
                   Phone
                 </ToggleButton>
                 <ToggleButton value="desktop">
-                  <DesktopWindows sx={{ fontSize: 16 }} />
+                  <Monitor size={14} />
                   Desktop
                 </ToggleButton>
                 <ToggleButton value="all">
-                  <Wallpaper sx={{ fontSize: 16 }} />
+                  <Layers size={14} />
                   All
                 </ToggleButton>
               </ToggleButtonGroup>
@@ -228,84 +286,121 @@ export default function Header() {
         PaperProps={{
           sx: {
             width: 280,
-            bgcolor: "background.default",
+            bgcolor: "transparent",
             borderRight: "none",
-            backdropFilter: "blur(40px)",
-            WebkitBackdropFilter: "blur(40px)",
+            backdropFilter: "blur(40px) saturate(1.8)",
+            WebkitBackdropFilter: "blur(40px) saturate(1.8)",
+            backgroundColor: (t) =>
+              t.palette.mode === "dark"
+                ? "rgba(9, 9, 11, 0.92)"
+                : "rgba(250, 251, 255, 0.92)",
           },
         }}
       >
-        <Box sx={{ p: 2.5, display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Box
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: 2.5,
-              background: tokens.gradient.primary,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: `0 4px 16px ${tokens.color.primaryLightCss}`,
-            }}
-          >
-            <Whatshot sx={{ color: "white", fontSize: 22 }} />
+        <Box sx={{ p: 2.5, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <Box
+              sx={{
+                width: 36,
+                height: 36,
+                borderRadius: "10px",
+                background: tokens.gradient.primary,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: `0 4px 16px ${tokens.color.primaryAlpha30}`,
+              }}
+            >
+              <Flame size={18} color="#fff" strokeWidth={2.5} />
+            </Box>
+            <Typography variant="h6" fontWeight={800} sx={{ letterSpacing: "-0.02em" }}>
+              Wallection
+            </Typography>
           </Box>
-          <Typography variant="h6" fontWeight={800}>
-            Wallection
-          </Typography>
+          <IconButton
+            onClick={() => setDrawerOpen(false)}
+            sx={{ color: "text.secondary", "&:hover": { bgcolor: "action.hover" } }}
+          >
+            <X size={18} />
+          </IconButton>
         </Box>
+
         <Divider sx={{ opacity: 0.06 }} />
+
         <List sx={{ px: 1, py: 0.5 }}>
-          {navItems.map((item) => {
+          {navItems.map((item, i) => {
             const Icon = item.icon;
             const active = isActive(item.href, pathname);
             return (
-              <ListItemButton
-                key={item.href}
-                selected={active}
-                onClick={() => {
-                  router.push(item.href);
-                  setDrawerOpen(false);
-                }}
-                sx={{
-                  borderRadius: 2.5,
-                  mb: 0.25,
-                  py: 1.25,
-                  transition: "all 0.2s ease",
-                  "&.Mui-selected": {
-                    bgcolor: (t) =>
-                      t.palette.mode === "dark"
-                        ? "rgba(124,77,255,0.12)"
-                        : "rgba(98,0,234,0.08)",
-                    "&:hover": {
+              <motion.div key={item.href} custom={i} variants={listItemVariants} initial="hidden" animate="visible">
+                <ListItemButton
+                  selected={active}
+                  onClick={() => handleNav(item.href)}
+                  sx={{
+                    borderRadius: "12px",
+                    mb: 0.25,
+                    py: 1.25,
+                    transition: "all 0.2s ease",
+                    "&.Mui-selected": {
                       bgcolor: (t) =>
                         t.palette.mode === "dark"
-                          ? "rgba(124,77,255,0.18)"
-                          : "rgba(98,0,234,0.12)",
+                          ? tokens.color.primaryAlpha15
+                          : tokens.color.primaryAlpha10,
+                      "&:hover": {
+                        bgcolor: (t) =>
+                          t.palette.mode === "dark"
+                            ? tokens.color.primaryAlpha20
+                            : tokens.color.primaryAlpha15,
+                      },
                     },
-                  },
-                }}
-              >
-                <ListItemIcon sx={{ minWidth: 38 }}>
-                  <Icon sx={{ fontSize: 21, color: active ? "primary.main" : "text.secondary" }} />
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.label}
-                  primaryTypographyProps={{
-                    fontWeight: active ? 600 : 500,
-                    fontSize: "0.9rem",
+                    "&:hover": { bgcolor: "action.hover" },
                   }}
-                />
-              </ListItemButton>
+                >
+                  <ListItemIcon sx={{ minWidth: 38 }}>
+                    <Icon
+                      size={19}
+                      style={{ color: active ? tokens.color.primary : undefined }}
+                      className={active ? "" : "MuiTypography-colorSecondary"}
+                    />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.label}
+                    primaryTypographyProps={{
+                      fontWeight: active ? 600 : 500,
+                      fontSize: "0.9rem",
+                      color: active ? "text.primary" : "text.secondary",
+                    }}
+                  />
+                  {active && (
+                    <Box
+                      sx={{
+                        width: 5,
+                        height: 5,
+                        borderRadius: "50%",
+                        bgcolor: "primary.main",
+                      }}
+                    />
+                  )}
+                </ListItemButton>
+              </motion.div>
             );
           })}
         </List>
+
         <Divider sx={{ mx: 2, opacity: 0.06 }} />
+
         <Box sx={{ px: 2, py: 1.5 }}>
           <Typography
             variant="caption"
             color="text.secondary"
-            sx={{ mb: 1, display: "block", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", fontSize: "0.65rem" }}
+            sx={{
+              mb: 1,
+              display: "block",
+              fontWeight: 600,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              fontSize: "0.65rem",
+            }}
           >
             Browse Categories
           </Typography>
@@ -315,19 +410,24 @@ export default function Header() {
             placeholder="Search categories..."
             value={categorySearch}
             onChange={(e) => setCategorySearch(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={{ fontSize: 18, color: "text.secondary" }} />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon size={16} style={{ color: "text.secondary" }} />
+                  </InputAdornment>
+                ),
+              },
             }}
             sx={{
               mb: 1,
               "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
+                borderRadius: "12px",
                 fontSize: "0.8rem",
-                bgcolor: (t) => t.palette.mode === "dark" ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)",
+                bgcolor: (t) =>
+                  t.palette.mode === "dark"
+                    ? tokens.color.surface.dark
+                    : tokens.color.surface.light,
               },
             }}
           />
@@ -340,22 +440,38 @@ export default function Header() {
                   setDrawerOpen(false);
                   setCategorySearch("");
                 }}
-                sx={{ borderRadius: 2, py: 0.75, minHeight: 36 }}
+                sx={{
+                  borderRadius: "10px",
+                  py: 0.75,
+                  minHeight: 36,
+                  "&:hover": { bgcolor: "action.hover" },
+                }}
               >
                 <ListItemText
                   primary={cat.name}
                   primaryTypographyProps={{ fontSize: "0.82rem", fontWeight: 500 }}
                 />
+                <ChevronRight size={14} style={{ color: tokens.color.textLightSecondary, opacity: 0.5 }} />
               </ListItemButton>
             ))}
           </List>
         </Box>
+
         <Divider sx={{ mx: 2, opacity: 0.06 }} />
+
         <List sx={{ px: 1, mt: 0.5 }}>
           <Typography
             variant="caption"
             color="text.secondary"
-            sx={{ px: 2, mb: 1, display: "block", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", fontSize: "0.65rem" }}
+            sx={{
+              px: 2,
+              mb: 1,
+              display: "block",
+              fontWeight: 600,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              fontSize: "0.65rem",
+            }}
           >
             Theme
           </Typography>
@@ -368,18 +484,32 @@ export default function Header() {
                 setDrawerOpen(false);
               }}
               sx={{
-                borderRadius: 2.5,
+                borderRadius: "12px",
                 py: 1,
                 "&.Mui-selected": {
                   bgcolor: (t) =>
                     t.palette.mode === "dark"
-                      ? "rgba(124,77,255,0.12)"
-                      : "rgba(98,0,234,0.08)",
+                      ? tokens.color.primaryAlpha15
+                      : tokens.color.primaryAlpha10,
                 },
+                "&:hover": { bgcolor: "action.hover" },
               }}
             >
               <ListItemIcon sx={{ minWidth: 38 }}>{opt.icon}</ListItemIcon>
-              <ListItemText primary={opt.label} primaryTypographyProps={{ fontWeight: 500, fontSize: "0.9rem" }} />
+              <ListItemText
+                primary={opt.label}
+                primaryTypographyProps={{ fontWeight: 500, fontSize: "0.9rem" }}
+              />
+              {theme === opt.value && (
+                <Box
+                  sx={{
+                    width: 5,
+                    height: 5,
+                    borderRadius: "50%",
+                    bgcolor: "primary.main",
+                  }}
+                />
+              )}
             </ListItemButton>
           ))}
         </List>

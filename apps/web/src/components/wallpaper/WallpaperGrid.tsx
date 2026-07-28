@@ -17,7 +17,7 @@ export default function WallpaperGrid({ wallpapers, variant = "grid" }: Wallpape
   const itemClass = variant === "masonry" ? "masonry-grid-item" : "image-grid-item";
 
   return (
-    <div className={containerClass} role="region" aria-label="Wallpaper Gallery">
+    <div className={containerClass} role="region" aria-label="Wallpaper gallery">
       {uniqueWallpapers.map((wallpaper, index) => (
         <div key={wallpaper.id} className={itemClass}>
           <WallpaperCard wallpaper={wallpaper} index={index} variant={variant} />
@@ -26,4 +26,3 @@ export default function WallpaperGrid({ wallpapers, variant = "grid" }: Wallpape
     </div>
   );
 }
-

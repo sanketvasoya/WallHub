@@ -32,8 +32,16 @@ export default function SearchBar({ fullWidth = false, autoFocus = false }: Sear
   );
 
   return (
-    <Box sx={{ position: "relative", width: fullWidth ? "100%" : { xs: "100%", md: 460 } }}>
-      <Box onFocus={() => setFocused(true)} onBlur={() => setTimeout(() => setFocused(false), 200)}>
+    <Box
+      sx={{
+        position: "relative",
+        width: fullWidth ? "100%" : { xs: "100%", md: 460 },
+      }}
+    >
+      <Box
+        onFocus={() => setFocused(true)}
+        onBlur={() => setTimeout(() => setFocused(false), 200)}
+      >
         <SearchInput
           value={query}
           onChange={setQuery}

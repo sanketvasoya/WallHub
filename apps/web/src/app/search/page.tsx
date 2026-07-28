@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef, Suspense } from "react";
-import { Box, Typography, Button } from "@mui/material";
-import { FilterList, Search as SearchIcon } from "@mui/icons-material";
+import { Box, Typography, Button, Chip, useTheme } from "@mui/material";
+import { motion } from "framer-motion";
+import { Search, SlidersHorizontal, Sparkles, TrendingUp } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/layout/Header";
 import BottomNav from "@/components/layout/BottomNav";
@@ -14,13 +15,18 @@ import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 import ErrorState from "@/components/ui/ErrorState";
 import { useSearch } from "@/hooks/useQueries";
 import { useOrientation } from "@/hooks/useOrientation";
+import { tokens } from "@/lib/tokens";
 import type { SortOption } from "@/types";
 
 const PAGE_SIZE = 20;
 
+const MotionBox = motion.create(Box);
+
 function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
   const initialQuery = searchParams.get("q") || "";
   const [query, setQuery] = useState(initialQuery);
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
@@ -34,10 +40,14 @@ function SearchContent() {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const { ratios, atleast } = useOrientation();
-  const { data, isLoading, isError, refetch } = useSearch(debouncedQuery, filters.sort, ratios, atleast);
+  const { data, isLoading, isError, refetch } = useSearch(
+    debouncedQuery,
+    filters.sort,
+    ratios,
+    atleast
+  );
   const allWallpapers = data?.wallpapers ?? [];
 
-  // Filter client-side if orientation filter selected
   const filteredWallpapers = allWallpapers.filter((w) => {
     if (filters.orientation !== "any" && w.orientation !== filters.orientation) {
       return false;
@@ -78,7 +88,9 @@ function SearchContent() {
     if (query.trim()) {
       setDebouncedQuery(query.trim());
       setVisibleCount(PAGE_SIZE);
-      router.replace(`/search?q=${encodeURIComponent(query.trim())}`, { scroll: false });
+      router.replace(`/search?q=${encodeURIComponent(query.trim())}`, {
+        scroll: false,
+      });
     }
   };
 
@@ -96,35 +108,60 @@ function SearchContent() {
       <Header />
 
       <Box sx={{ px: { xs: 2, sm: 3 }, pt: 2 }}>
-        <PageHeader
-          title="Search Wallpapers"
-          subtitle="Explore millions of 4K wallpapers by keyword, tag, or topic"
-          icon={<SearchIcon />}
-          action={
-            showResults ? (
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<FilterList sx={{ fontSize: 18 }} />}
-                onClick={() => setFilterOpen(true)}
-                sx={{ borderRadius: 3, px: 2, textTransform: "none", fontWeight: 600 }}
-              >
-                Filter
-              </Button>
-            ) : undefined
-          }
-        />
-
-        <Box sx={{ mb: 3 }}>
-          <SearchInput
-            value={query}
-            onChange={setQuery}
-            onSubmit={handleSubmit}
-            onSelect={handleSelect}
-            autoFocus
-            showSuggestions={!debouncedQuery}
+        <MotionBox
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: tokens.animation.curve.standard }}
+        >
+          <PageHeader
+            title="Search Wallpapers"
+            subtitle="Explore millions of 4K wallpapers by keyword, tag, or topic"
+            icon={<Search size={18} strokeWidth={2.2} />}
+            action={
+              showResults ? (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<SlidersHorizontal size={15} />}
+                  onClick={() => setFilterOpen(true)}
+                  sx={{
+                    borderRadius: 2.5,
+                    px: 2,
+                    textTransform: "none",
+                    fontWeight: 600,
+                    fontSize: "0.8rem",
+                    borderColor: "divider",
+                    "&:hover": {
+                      borderColor: "primary.main",
+                      bgcolor: isDark
+                        ? tokens.color.primaryAlpha8
+                        : tokens.color.primaryAlpha8,
+                    },
+                  }}
+                >
+                  Filter
+                </Button>
+              ) : undefined
+            }
           />
-        </Box>
+        </MotionBox>
+
+        <MotionBox
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1, ease: tokens.animation.curve.standard }}
+        >
+          <Box sx={{ mb: 3 }}>
+            <SearchInput
+              value={query}
+              onChange={setQuery}
+              onSubmit={handleSubmit}
+              onSelect={handleSelect}
+              autoFocus
+              showSuggestions={!debouncedQuery}
+            />
+          </Box>
+        </MotionBox>
 
         {showResults && (
           <>
@@ -133,12 +170,31 @@ function SearchContent() {
             ) : isError ? (
               <ErrorState message="Search failed" onRetry={() => refetch()} />
             ) : wallpapers.length === 0 ? (
-              <ErrorState type="notFound" message={`No wallpapers found for "${debouncedQuery}"`} />
+              <ErrorState
+                type="notFound"
+                message={`No wallpapers found for "${debouncedQuery}"`}
+              />
             ) : (
               <>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2, ml: 1, fontSize: "0.8rem", fontWeight: 500 }}>
-                  Showing {wallpapers.length} of {filteredWallpapers.length} results for &quot;{debouncedQuery}&quot;
-                </Typography>
+                <MotionBox
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      mb: 2,
+                      ml: 1,
+                      fontSize: "0.8rem",
+                      fontWeight: 500,
+                    }}
+                  >
+                    Showing {wallpapers.length} of {filteredWallpapers.length}{" "}
+                    results for &quot;{debouncedQuery}&quot;
+                  </Typography>
+                </MotionBox>
                 <WallpaperGrid wallpapers={wallpapers} />
                 {hasMore && (
                   <Box ref={sentinelRef} sx={{ py: 2 }}>
@@ -149,9 +205,63 @@ function SearchContent() {
             )}
           </>
         )}
+
+        {!showResults && (
+          <MotionBox
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2, ease: tokens.animation.curve.standard }}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              py: 8,
+              gap: 3,
+            }}
+          >
+            <Box
+              sx={{
+                width: 72,
+                height: 72,
+                borderRadius: 3,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: isDark
+                  ? tokens.color.surfaceDark
+                  : tokens.color.surfaceLight,
+                border: "1px solid",
+                borderColor: isDark
+                  ? tokens.color.borderDark
+                  : tokens.color.borderLight,
+              }}
+            >
+              <Sparkles
+                size={32}
+                strokeWidth={1.5}
+                style={{ color: tokens.color.primary }}
+              />
+            </Box>
+            <Box sx={{ textAlign: "center" }}>
+              <Typography
+                variant="h6"
+                fontWeight={700}
+                sx={{ fontSize: "1.05rem", mb: 0.5 }}
+              >
+                Search for anything
+              </Typography>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ fontSize: "0.85rem", maxWidth: 300 }}
+              >
+                Type a keyword, tag, or subreddit to find the perfect wallpaper
+              </Typography>
+            </Box>
+          </MotionBox>
+        )}
       </Box>
 
-      {/* Filter Sheet Modal */}
       <FilterSheet
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
@@ -161,7 +271,11 @@ function SearchContent() {
           setVisibleCount(PAGE_SIZE);
         }}
         onReset={() => {
-          setFilters({ sort: "relevance" as SortOption, resolution: "any", orientation: "any" });
+          setFilters({
+            sort: "relevance" as SortOption,
+            resolution: "any",
+            orientation: "any",
+          });
           setVisibleCount(PAGE_SIZE);
         }}
       />
@@ -178,4 +292,3 @@ export default function SearchPage() {
     </Suspense>
   );
 }
-

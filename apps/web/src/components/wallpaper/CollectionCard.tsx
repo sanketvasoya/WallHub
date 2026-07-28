@@ -24,38 +24,48 @@ export default function CollectionCard({ collection, index = 0 }: CollectionCard
       aria-label={`Explore ${collection.name} collection`}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: Math.min(index * 0.05, 0.4) }}
+      transition={{
+        duration: 0.4,
+        delay: Math.min(index * 0.05, 0.4),
+        ease: tokens.animation.curve.standard,
+      }}
+      whileHover={{ y: -3, transition: { duration: 0.25, ease: tokens.animation.curve.standard } }}
+      whileTap={{ scale: 0.98 }}
       onClick={() => router.push(`/collections/${collection.slug}`)}
       sx={{
         position: "relative",
         p: 2.5,
-        borderRadius: 3.5,
+        borderRadius: tokens.radius.xl,
         cursor: "pointer",
         overflow: "hidden",
-        background: isDark
-          ? tokens.color.surfaceDark
-          : tokens.color.surfaceLight,
+        background: isDark ? tokens.color.surfaceDark : tokens.color.surfaceLight,
         border: "1px solid",
         borderColor: isDark ? tokens.color.borderDark : tokens.color.borderLight,
-        transition: "all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+        transition: "border-color 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s cubic-bezier(0.16,1,0.3,1)",
         "&:hover": {
-          transform: "translateY(-3px)",
-          borderColor: "primary.main",
-          boxShadow: isDark
-            ? tokens.shadows.dark.primarySm
-            : tokens.shadows.light.primarySm,
+          borderColor: tokens.color.primary,
+          boxShadow: isDark ? tokens.shadows.dark.sm : tokens.shadows.light.md,
         },
       }}
     >
-      <Typography variant="h6" fontWeight={700} sx={{ fontSize: "0.95rem", mb: 0.5, color: "text.primary" }}>
+      <Typography
+        variant="h6"
+        sx={{
+          fontWeight: 700,
+          fontSize: "0.95rem",
+          mb: 0.5,
+          color: "text.primary",
+          letterSpacing: "-0.01em",
+        }}
+      >
         {collection.name}
       </Typography>
       <Typography
         variant="body2"
-        color="text.secondary"
         sx={{
-          fontSize: "0.78rem",
-          lineHeight: 1.4,
+          fontSize: "0.8rem",
+          lineHeight: 1.45,
+          color: "text.secondary",
           display: "-webkit-box",
           WebkitLineClamp: 2,
           WebkitBoxOrient: "vertical",

@@ -1,7 +1,18 @@
 "use client";
 
-import { Box, Typography, Button } from "@mui/material";
-import { TrendingUp, ArrowForward, Whatshot, AutoAwesome } from "@mui/icons-material";
+import { Box, Typography, Button, useTheme } from "@mui/material";
+import { motion } from "framer-motion";
+import {
+  TrendingUp,
+  ArrowRight,
+  Flame,
+  Sparkles,
+  Rocket,
+  TreePine,
+  CircleDot,
+  Minus,
+  Landmark,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import BottomNav from "@/components/layout/BottomNav";
@@ -12,8 +23,10 @@ import WallpaperHero from "@/components/wallpaper/WallpaperHero";
 import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 import ErrorState from "@/components/ui/ErrorState";
 import { useHomepage, useCollections } from "@/hooks/useQueries";
+import { tokens } from "@/lib/tokens";
+import type { Category } from "@/types";
 
-const quickCategories = [
+const quickCategories: Category[] = [
   { slug: "minimal", name: "Minimal", icon: "Minimize", description: "Clean & simple", subreddits: [] },
   { slug: "space", name: "Space", icon: "RocketLaunch", description: "Cosmic & galaxy", subreddits: [] },
   { slug: "nature", name: "Nature", icon: "Park", description: "Landscapes & forests", subreddits: [] },
@@ -22,30 +35,55 @@ const quickCategories = [
   { slug: "abstract", name: "Abstract", icon: "BubbleChart", description: "Art & gradients", subreddits: [] },
 ];
 
-function SectionHeader({ title, icon, onSeeAll }: { title: string; icon: React.ReactNode; onSeeAll?: () => void }) {
+const MotionBox = motion.create(Box);
+
+function SectionHeader({
+  title,
+  icon,
+  onSeeAll,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  onSeeAll?: () => void;
+}) {
   return (
     <Box
       sx={{
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        px: { xs: 1.5, sm: 2, md: 3 },
-        mb: 2,
+        px: { xs: 2, sm: 3 },
+        mb: 2.5,
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        {icon}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
+        <Box
+          sx={{
+            width: 32,
+            height: 32,
+            borderRadius: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "primary.main",
+          }}
+        >
+          {icon}
+        </Box>
         <Typography
           variant="h6"
           fontWeight={800}
-          sx={{ fontSize: { xs: "1.05rem", sm: "1.2rem" }, letterSpacing: "-0.01em" }}
+          sx={{
+            fontSize: { xs: "1.05rem", sm: "1.2rem" },
+            letterSpacing: "-0.02em",
+          }}
         >
           {title}
         </Typography>
       </Box>
       {onSeeAll && (
         <Button
-          endIcon={<ArrowForward sx={{ fontSize: 16 }} />}
+          endIcon={<ArrowRight size={16} />}
           onClick={onSeeAll}
           size="small"
           sx={{
@@ -53,7 +91,18 @@ function SectionHeader({ title, icon, onSeeAll }: { title: string; icon: React.R
             color: "text.secondary",
             fontSize: "0.8rem",
             fontWeight: 600,
-            "&:hover": { color: "primary.main" },
+            gap: 0.5,
+            borderRadius: 2,
+            px: 1.5,
+            py: 0.5,
+            transition: "all 0.2s ease",
+            "&:hover": {
+              color: "primary.main",
+              bgcolor: (t) =>
+                t.palette.mode === "dark"
+                  ? tokens.color.primaryAlpha10
+                  : tokens.color.primaryAlpha8,
+            },
           }}
         >
           See All
@@ -65,6 +114,8 @@ function SectionHeader({ title, icon, onSeeAll }: { title: string; icon: React.R
 
 function HomeContent() {
   const router = useRouter();
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
   const { data: homepage, isLoading, isError, refetch } = useHomepage();
   const { data: collectionsData } = useCollections();
   const collections = collectionsData?.collections?.slice(0, 4) ?? [];
@@ -93,64 +144,79 @@ function HomeContent() {
   return (
     <Box sx={{ pb: { xs: 10, sm: 4 } }}>
       <Header />
-      
-      {/* Hero Banner */}
+
       <WallpaperHero wallpapers={homepage.hero} />
 
-      {/* Quick Categories */}
-      <Box sx={{ mt: 4, mb: 2 }}>
-        <SectionHeader
-          title="Categories"
-          icon={<Whatshot sx={{ color: "primary.main", fontSize: 22 }} />}
-          onSeeAll={() => router.push("/category/minimal")}
-        />
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
-            gap: 1.5,
-            px: { xs: 1.5, sm: 2, md: 3 },
-          }}
-        >
-          {quickCategories.map((cat, i) => (
-            <CategoryCard key={cat.slug} category={cat} index={i} />
-          ))}
-        </Box>
-      </Box>
-
-      {/* Collections */}
-      {collections.length > 0 && (
+      <MotionBox
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2, ease: tokens.animation.curve.standard }}
+      >
         <Box sx={{ mt: 4, mb: 2 }}>
           <SectionHeader
-            title="Featured Collections"
-            icon={<AutoAwesome sx={{ color: "warning.main", fontSize: 22 }} />}
-            onSeeAll={() => router.push("/collections")}
+            title="Categories"
+            icon={<Flame size={20} strokeWidth={2.2} />}
+            onSeeAll={() => router.push("/category/minimal")}
           />
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
               gap: 1.5,
-              px: { xs: 1.5, sm: 2, md: 3 },
+              px: { xs: 2, sm: 3 },
             }}
           >
-            {collections.map((c, i) => (
-              <CollectionCard key={c.slug} collection={c} index={i} />
+            {quickCategories.map((cat, i) => (
+              <CategoryCard key={cat.slug} category={cat} index={i} />
             ))}
           </Box>
         </Box>
+      </MotionBox>
+
+      {collections.length > 0 && (
+        <MotionBox
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.35, ease: tokens.animation.curve.standard }}
+        >
+          <Box sx={{ mt: 4, mb: 2 }}>
+            <SectionHeader
+              title="Featured Collections"
+              icon={<Sparkles size={20} strokeWidth={2.2} />}
+              onSeeAll={() => router.push("/collections")}
+            />
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+                gap: 1.5,
+                px: { xs: 2, sm: 3 },
+              }}
+            >
+              {collections.map((c, i) => (
+                <CollectionCard key={c.slug} collection={c} index={i} />
+              ))}
+            </Box>
+          </Box>
+        </MotionBox>
       )}
 
-      {/* Curated Sections */}
-      {homepage.sections.map((section) => (
-        <Box key={section.id} sx={{ mt: 5 }}>
-          <SectionHeader
-            title={section.name}
-            icon={<TrendingUp sx={{ color: "error.main", fontSize: 22 }} />}
-            onSeeAll={() => router.push(`/category/${section.id}`)}
-          />
-          <WallpaperGrid wallpapers={section.wallpapers} />
-        </Box>
+      {homepage.sections.map((section, idx) => (
+        <MotionBox
+          key={section.id}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 + idx * 0.1, ease: tokens.animation.curve.standard }}
+        >
+          <Box sx={{ mt: 5 }}>
+            <SectionHeader
+              title={section.name}
+              icon={<TrendingUp size={20} strokeWidth={2.2} />}
+              onSeeAll={() => router.push(`/category/${section.id}`)}
+            />
+            <WallpaperGrid wallpapers={section.wallpapers} />
+          </Box>
+        </MotionBox>
       ))}
 
       <BottomNav />

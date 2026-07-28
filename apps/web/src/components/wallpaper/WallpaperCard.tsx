@@ -1,23 +1,13 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import {
-  Box,
-  IconButton,
-  Tooltip,
-  Typography,
-} from "@mui/material";
-import {
-  FavoriteBorder,
-  Favorite,
-  Download,
-  Share,
-  BrokenImage,
-} from "@mui/icons-material";
+import { Box, IconButton, Tooltip, Typography, useTheme } from "@mui/material";
+import { Heart, Download, Share2, ImageIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import NextLink from "next/link";
 import { useWallpaperActions } from "@/hooks/useWallpaperActions";
 import { getResolutionBadge } from "@/lib/utils";
+import { tokens } from "@/lib/tokens";
 import type { Wallpaper } from "@/types";
 
 interface WallpaperCardProps {
@@ -33,6 +23,8 @@ function formatUpvotes(n: number): string {
 
 export default function WallpaperCard({ wallpaper, index = 0, variant = "grid" }: WallpaperCardProps) {
   const [imgError, setImgError] = useState(false);
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
   const { isFavorite, handleDownload, handleShare, handleToggleFavorite } = useWallpaperActions(wallpaper);
 
   const handleFavorite = useCallback(
@@ -41,7 +33,7 @@ export default function WallpaperCard({ wallpaper, index = 0, variant = "grid" }
       e.stopPropagation();
       handleToggleFavorite();
     },
-    [handleToggleFavorite]
+    [handleToggleFavorite],
   );
 
   const handleDownloadClick = useCallback(
@@ -50,7 +42,7 @@ export default function WallpaperCard({ wallpaper, index = 0, variant = "grid" }
       e.stopPropagation();
       handleDownload();
     },
-    [handleDownload]
+    [handleDownload],
   );
 
   const handleShareClick = useCallback(
@@ -59,57 +51,57 @@ export default function WallpaperCard({ wallpaper, index = 0, variant = "grid" }
       e.stopPropagation();
       handleShare();
     },
-    [handleShare]
+    [handleShare],
   );
 
   const delay = Math.min(index * 0.04, 0.5);
   const resBadge = getResolutionBadge(wallpaper.width, wallpaper.height);
-  
-  // Calculate dynamic aspect ratio for grid layout
-  const aspectRatio = variant === "masonry" 
-    ? `${wallpaper.width} / ${wallpaper.height}`
-    : wallpaper.orientation === "portrait" 
-      ? "3/4" 
-      : "16/9";
+
+  const aspectRatio =
+    variant === "masonry"
+      ? `${wallpaper.width} / ${wallpaper.height}`
+      : wallpaper.orientation === "portrait"
+        ? "3/4"
+        : "16/9";
+
+  const actionBtnBase = {
+    width: 34,
+    height: 34,
+    borderRadius: "10px",
+    backdropFilter: "blur(16px)",
+    WebkitBackdropFilter: "blur(16px)",
+    transition: "all 0.2s cubic-bezier(0.16,1,0.3,1)",
+    "&:hover": {
+      transform: "scale(1.1)",
+    },
+  } as const;
 
   return (
     <NextLink href={`/wallpaper/${wallpaper.id}`} style={{ textDecoration: "none" }}>
       <motion.div
         role="article"
         aria-label={wallpaper.title || `Wallpaper ${wallpaper.id}`}
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
-        whileHover={{ scale: 1.018, transition: { duration: 0.25 } }}
-        whileTap={{ scale: 0.98 }}
-        style={{
-          position: "relative",
-          borderRadius: 14,
-          overflow: "hidden",
-          cursor: "pointer",
-          background: "transparent",
+        transition={{
+          duration: 0.5,
+          delay,
+          ease: tokens.animation.curve.standard,
         }}
+        whileHover={{ scale: 1.015, transition: { duration: 0.3, ease: tokens.animation.curve.standard } }}
+        whileTap={{ scale: 0.985 }}
+        style={{ position: "relative", borderRadius: tokens.radius.xl, overflow: "hidden", cursor: "pointer" }}
       >
         <Box
           sx={{
             position: "relative",
             overflow: "hidden",
-            borderRadius: 3.5,
-            bgcolor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)",
-            "&:hover .wallpaper-img": {
-              transform: "scale(1.06)",
-            },
-            "&:hover .wallpaper-actions": {
-              opacity: 1,
-              transform: "translateY(0)",
-            },
-            "&:hover .wallpaper-info": {
-              opacity: 1,
-              transform: "translateY(0)",
-            },
-            "&:hover .wallpaper-gradient": {
-              opacity: 1,
-            },
+            borderRadius: tokens.radius.xl,
+            bgcolor: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)",
+            "&:hover .card-img": { transform: "scale(1.06)" },
+            "&:hover .card-gradient": { opacity: 1 },
+            "&:hover .card-info": { opacity: 1, transform: "translateY(0)" },
+            "&:hover .card-actions": { opacity: 1, transform: "translateY(0)" },
           }}
         >
           {!imgError ? (
@@ -119,15 +111,14 @@ export default function WallpaperCard({ wallpaper, index = 0, variant = "grid" }
               alt={wallpaper.title || `Wallpaper ${wallpaper.id}`}
               loading="lazy"
               decoding="async"
-              className="wallpaper-img"
+              className="card-img"
               onError={() => setImgError(true)}
               sx={{
                 width: "100%",
                 display: "block",
                 aspectRatio,
                 objectFit: "cover",
-                transition: "transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-                borderRadius: 3.5,
+                transition: "transform 0.6s cubic-bezier(0.16,1,0.3,1)",
               }}
             />
           ) : (
@@ -139,31 +130,33 @@ export default function WallpaperCard({ wallpaper, index = 0, variant = "grid" }
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                bgcolor: (t) => t.palette.mode === "dark" ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
-                borderRadius: 3.5,
+                bgcolor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
                 gap: 1,
                 color: "text.secondary",
               }}
             >
-              <BrokenImage sx={{ fontSize: 32, opacity: 0.5 }} />
-              <Typography variant="caption">Image preview unavailable</Typography>
+              <ImageIcon size={32} strokeWidth={1.5} />
+              <Typography variant="caption" sx={{ opacity: 0.6, fontSize: "0.7rem" }}>
+                Unavailable
+              </Typography>
             </Box>
           )}
 
+          {/* Gradient overlay */}
           <Box
-            className="wallpaper-gradient"
+            className="card-gradient"
             sx={{
               position: "absolute",
               inset: 0,
-              background: "linear-gradient(to top, rgba(5,5,10,0.85) 0%, rgba(5,5,10,0.2) 50%, rgba(0,0,0,0) 100%)",
+              background: `linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.15) 45%, transparent 100%)`,
               opacity: 0,
-              transition: "opacity 0.3s ease",
+              transition: "opacity 0.35s ease",
               pointerEvents: "none",
-              borderRadius: 3.5,
+              borderRadius: tokens.radius.xl,
             }}
           />
 
-          {/* Top Badges */}
+          {/* Top badges */}
           <Box
             sx={{
               position: "absolute",
@@ -178,58 +171,26 @@ export default function WallpaperCard({ wallpaper, index = 0, variant = "grid" }
             }}
           >
             <Box sx={{ display: "flex", gap: 0.5 }}>
-              <Box
+              <BadgePill dark={isDark}>{wallpaper.orientation}</BadgePill>
+              <BadgePill
+                dark={isDark}
                 sx={{
-                  px: 1,
-                  py: 0.3,
-                  borderRadius: 1.5,
-                  backdropFilter: "blur(12px)",
-                  background: "rgba(0,0,0,0.5)",
-                  fontSize: "0.6rem",
-                  fontWeight: 700,
-                  color: "white",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.06em",
-                }}
-              >
-                {wallpaper.orientation}
-              </Box>
-              <Box
-                sx={{
-                  px: 1,
-                  py: 0.3,
-                  borderRadius: 1.5,
-                  backdropFilter: "blur(12px)",
-                  background: "rgba(124,77,255,0.6)",
-                  fontSize: "0.6rem",
-                  fontWeight: 700,
-                  color: "white",
-                  letterSpacing: "0.04em",
+                  background: isDark
+                    ? "rgba(91,95,239,0.65)"
+                    : "rgba(91,95,239,0.85)",
                 }}
               >
                 {resBadge}
-              </Box>
+              </BadgePill>
             </Box>
-
-            <Box
-              sx={{
-                px: 1,
-                py: 0.3,
-                borderRadius: 1.5,
-                backdropFilter: "blur(12px)",
-                background: "rgba(0,0,0,0.5)",
-                fontSize: "0.6rem",
-                fontWeight: 700,
-                color: "#00e5ff",
-              }}
-            >
+            <BadgePill dark={isDark} sx={{ color: tokens.color.accent }}>
               {formatUpvotes(wallpaper.upvotes)}
-            </Box>
+            </BadgePill>
           </Box>
 
-          {/* Hover Title & Color Dots */}
+          {/* Bottom info */}
           <Box
-            className="wallpaper-info"
+            className="card-info"
             sx={{
               position: "absolute",
               bottom: 12,
@@ -237,22 +198,23 @@ export default function WallpaperCard({ wallpaper, index = 0, variant = "grid" }
               right: 110,
               opacity: 0,
               transform: "translateY(8px)",
-              transition: "all 0.3s ease",
+              transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
               zIndex: 2,
               pointerEvents: "none",
             }}
           >
             <Typography
               variant="caption"
-              fontWeight={700}
               sx={{
-                color: "white",
+                color: "#fff",
+                fontWeight: 700,
+                fontSize: "0.78rem",
+                lineHeight: 1.2,
                 display: "-webkit-box",
                 WebkitLineClamp: 1,
                 WebkitBoxOrient: "vertical",
                 overflow: "hidden",
-                fontSize: "0.75rem",
-                lineHeight: 1.2,
+                textShadow: "0 1px 4px rgba(0,0,0,0.5)",
                 mb: 0.5,
               }}
             >
@@ -260,7 +222,7 @@ export default function WallpaperCard({ wallpaper, index = 0, variant = "grid" }
             </Typography>
             {wallpaper.colors && wallpaper.colors.length > 0 && (
               <Box sx={{ display: "flex", gap: 0.4 }}>
-                {wallpaper.colors.slice(0, 4).map((c, i) => (
+                {wallpaper.colors.slice(0, 5).map((c, i) => (
                   <Box
                     key={i}
                     sx={{
@@ -268,7 +230,8 @@ export default function WallpaperCard({ wallpaper, index = 0, variant = "grid" }
                       height: 10,
                       borderRadius: "50%",
                       bgcolor: c,
-                      border: "1px solid rgba(255,255,255,0.4)",
+                      border: "1.5px solid rgba(255,255,255,0.45)",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
                     }}
                   />
                 ))}
@@ -276,9 +239,9 @@ export default function WallpaperCard({ wallpaper, index = 0, variant = "grid" }
             )}
           </Box>
 
-          {/* Action Buttons */}
+          {/* Action buttons */}
           <Box
-            className="wallpaper-actions"
+            className="card-actions"
             sx={{
               position: "absolute",
               bottom: 10,
@@ -287,71 +250,53 @@ export default function WallpaperCard({ wallpaper, index = 0, variant = "grid" }
               gap: 0.5,
               opacity: 0,
               transform: "translateY(8px)",
-              transition: "all 0.3s ease",
+              transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
               zIndex: 2,
             }}
           >
-            <Tooltip title={isFavorite ? "Remove favorite" : "Add to favorites"} placement="top">
+            <Tooltip title={isFavorite ? "Remove favorite" : "Add to favorites"} arrow placement="top">
               <IconButton
                 size="small"
                 aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
                 onClick={handleFavorite}
                 sx={{
-                  width: 32,
-                  height: 32,
-                  bgcolor: "rgba(0,0,0,0.55)",
-                  backdropFilter: "blur(12px)",
-                  color: isFavorite ? "#ff6b9d" : "rgba(255,255,255,0.9)",
-                  transition: "all 0.2s ease",
-                  "&:hover": {
-                    bgcolor: "rgba(0,0,0,0.8)",
-                    transform: "scale(1.12)",
-                  },
+                  ...actionBtnBase,
+                  bgcolor: "rgba(0,0,0,0.5)",
+                  color: isFavorite ? "#FF6B9D" : "rgba(255,255,255,0.9)",
+                  "&:hover": { bgcolor: "rgba(0,0,0,0.7)" },
                 }}
               >
-                {isFavorite ? <Favorite sx={{ fontSize: 16 }} /> : <FavoriteBorder sx={{ fontSize: 16 }} />}
+                <Heart size={15} fill={isFavorite ? "#FF6B9D" : "none"} strokeWidth={2} />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Download" placement="top">
+            <Tooltip title="Download" arrow placement="top">
               <IconButton
                 size="small"
                 aria-label="Download wallpaper"
                 onClick={handleDownloadClick}
                 sx={{
-                  width: 32,
-                  height: 32,
-                  bgcolor: "rgba(0,0,0,0.55)",
-                  backdropFilter: "blur(12px)",
+                  ...actionBtnBase,
+                  bgcolor: "rgba(0,0,0,0.5)",
                   color: "rgba(255,255,255,0.9)",
-                  transition: "all 0.2s ease",
-                  "&:hover": {
-                    bgcolor: "rgba(0,0,0,0.8)",
-                    transform: "scale(1.12)",
-                  },
+                  "&:hover": { bgcolor: "rgba(0,0,0,0.7)" },
                 }}
               >
-                <Download sx={{ fontSize: 16 }} />
+                <Download size={15} strokeWidth={2} />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Share" placement="top">
+            <Tooltip title="Share" arrow placement="top">
               <IconButton
                 size="small"
                 aria-label="Share wallpaper"
                 onClick={handleShareClick}
                 sx={{
-                  width: 32,
-                  height: 32,
-                  bgcolor: "rgba(0,0,0,0.55)",
-                  backdropFilter: "blur(12px)",
+                  ...actionBtnBase,
+                  bgcolor: "rgba(0,0,0,0.5)",
                   color: "rgba(255,255,255,0.9)",
-                  transition: "all 0.2s ease",
-                  "&:hover": {
-                    bgcolor: "rgba(0,0,0,0.8)",
-                    transform: "scale(1.12)",
-                  },
+                  "&:hover": { bgcolor: "rgba(0,0,0,0.7)" },
                 }}
               >
-                <Share sx={{ fontSize: 16 }} />
+                <Share2 size={15} strokeWidth={2} />
               </IconButton>
             </Tooltip>
           </Box>
@@ -361,3 +306,34 @@ export default function WallpaperCard({ wallpaper, index = 0, variant = "grid" }
   );
 }
 
+function BadgePill({
+  children,
+  dark,
+  sx,
+}: {
+  children: React.ReactNode;
+  dark: boolean;
+  sx?: object;
+}) {
+  return (
+    <Box
+      sx={{
+        px: 1,
+        py: 0.25,
+        borderRadius: "8px",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        background: dark ? "rgba(0,0,0,0.5)" : "rgba(0,0,0,0.45)",
+        fontSize: "0.6rem",
+        fontWeight: 700,
+        color: "#fff",
+        textTransform: "uppercase",
+        letterSpacing: "0.05em",
+        lineHeight: 1.6,
+        ...sx,
+      }}
+    >
+      {children}
+    </Box>
+  );
+}

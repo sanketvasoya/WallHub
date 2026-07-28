@@ -1,42 +1,29 @@
-import { Home, Category, Search, Favorite, Settings, Collections, Download, MoreHoriz } from "@mui/icons-material";
-import type { SvgIconComponent } from "@mui/icons-material";
+import { Home, Search, Heart, Settings, Grid3X3, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
   label: string;
   mobileLabel: string;
-  icon: SvgIconComponent;
+  icon: LucideIcon;
   href: string;
 }
 
-export const navItems: NavItem[] = [
+export const mobileNavItems: NavItem[] = [
   { label: "Home", mobileLabel: "Home", icon: Home, href: "/" },
-  { label: "Categories", mobileLabel: "Explore", icon: Category, href: "/category/trending" },
-  { label: "Collections", mobileLabel: "Collections", icon: Collections, href: "/collections" },
+  { label: "Collections", mobileLabel: "Explore", icon: Grid3X3, href: "/collections" },
   { label: "Search", mobileLabel: "Search", icon: Search, href: "/search" },
-  { label: "Favorites", mobileLabel: "Favorites", icon: Favorite, href: "/favorites" },
-  { label: "Downloads", mobileLabel: "Downloads", icon: Download, href: "/downloads" },
+  { label: "Favorites", mobileLabel: "Favorites", icon: Heart, href: "/favorites" },
   { label: "Settings", mobileLabel: "Settings", icon: Settings, href: "/settings" },
 ];
 
-export const mobileNavItems: NavItem[] = [
+export const navItems: NavItem[] = [
   { label: "Home", mobileLabel: "Home", icon: Home, href: "/" },
-  { label: "Categories", mobileLabel: "Explore", icon: Category, href: "/category/trending" },
+  { label: "Collections", mobileLabel: "Collections", icon: Grid3X3, href: "/collections" },
   { label: "Search", mobileLabel: "Search", icon: Search, href: "/search" },
-  { label: "Favorites", mobileLabel: "Favorites", icon: Favorite, href: "/favorites" },
-  { label: "More", mobileLabel: "More", icon: MoreHoriz, href: "__more__" },
-];
-
-export const moreMenuItems: NavItem[] = [
-  { label: "Downloads", mobileLabel: "Downloads", icon: Download, href: "/downloads" },
-  { label: "Collections", mobileLabel: "Collections", icon: Collections, href: "/collections" },
+  { label: "Favorites", mobileLabel: "Favorites", icon: Heart, href: "/favorites" },
   { label: "Settings", mobileLabel: "Settings", icon: Settings, href: "/settings" },
 ];
 
 export function isActive(href: string, pathname: string): boolean {
   if (href === "/") return pathname === "/";
-  if (href === "__more__") {
-    return moreMenuItems.some((item) => isActive(item.href, pathname));
-  }
   return pathname === href || pathname.startsWith(href + "/");
 }
-

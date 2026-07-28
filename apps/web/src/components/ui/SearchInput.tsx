@@ -1,9 +1,11 @@
 "use client";
 
 import { Box, TextField, InputAdornment, IconButton, Chip, Typography } from "@mui/material";
-import { Search, Close, TrendingUp, History } from "@mui/icons-material";
+import { Search, X, TrendingUp, Clock } from "lucide-react";
 import { useSearchHistoryStore } from "@/lib/stores";
 import { TRENDING_SEARCHES } from "@/lib/constants";
+import { tokens } from "@/lib/tokens";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface SearchInputProps {
   value: string;
@@ -13,6 +15,22 @@ interface SearchInputProps {
   autoFocus?: boolean;
   showSuggestions?: boolean;
 }
+
+const suggestionsVariants = {
+  hidden: { opacity: 0, y: -4, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] as const },
+  },
+  exit: {
+    opacity: 0,
+    y: -4,
+    scale: 0.98,
+    transition: { duration: 0.12 },
+  },
+};
 
 export default function SearchInput({
   value,
@@ -53,7 +71,7 @@ export default function SearchInput({
             input: {
               startAdornment: (
                 <InputAdornment position="start">
-                  <Search sx={{ color: "text.secondary", fontSize: 20 }} />
+                  <Search size={18} style={{ color: "text.secondary" }} />
                 </InputAdornment>
               ),
               endAdornment: value ? (
@@ -67,29 +85,32 @@ export default function SearchInput({
                       "&:hover": { bgcolor: "action.hover" },
                     }}
                   >
-                    <Close sx={{ fontSize: 16 }} />
+                    <X size={15} />
                   </IconButton>
                 </InputAdornment>
               ) : undefined,
               sx: {
-                borderRadius: 100,
-                height: 48,
+                borderRadius: "100px",
+                height: 44,
                 bgcolor: (theme) =>
                   theme.palette.mode === "dark"
-                    ? "rgba(255,255,255,0.04)"
-                    : "rgba(0,0,0,0.03)",
-                "& fieldset": { border: "1px solid", borderColor: (theme) => theme.palette.divider },
-                transition: "all 0.25s ease",
+                    ? tokens.color.surface.dark
+                    : tokens.color.surface.light,
+                "& fieldset": {
+                  border: "1px solid",
+                  borderColor: (theme) => theme.palette.divider,
+                },
+                transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
                 "&:hover": {
                   bgcolor: (theme) =>
                     theme.palette.mode === "dark"
-                      ? "rgba(255,255,255,0.06)"
-                      : "rgba(0,0,0,0.05)",
+                      ? tokens.color.surface.darkHover
+                      : tokens.color.surface.lightHover,
                   "& fieldset": {
                     borderColor: (theme) =>
                       theme.palette.mode === "dark"
-                        ? "rgba(255,255,255,0.12)"
-                        : "rgba(0,0,0,0.12)",
+                        ? tokens.color.borderDarkHover
+                        : tokens.color.borderLightHover,
                   },
                 },
                 "&.Mui-focused": {
@@ -98,102 +119,174 @@ export default function SearchInput({
                     borderWidth: 1.5,
                   },
                 },
-                fontSize: "0.9rem",
+                fontSize: "0.875rem",
               },
             },
           }}
         />
       </Box>
 
-      {showSuggestions && hasSuggestions && (
-        <Box sx={{ mt: 1.5, px: 0.5 }}>
-          {history.length > 0 && (
-            <Box sx={{ mb: 2 }}>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", px: 1, mb: 0.5 }}>
-                <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                  Recent
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="primary.main"
-                  sx={{ cursor: "pointer", fontSize: "0.7rem", fontWeight: 600, "&:hover": { textDecoration: "underline" } }}
-                  onClick={clearHistory}
-                >
-                  Clear
-                </Typography>
-              </Box>
-              {history.slice(0, 5).map((term) => (
-                <Box
-                  key={term}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                    px: 1,
-                    py: 0.75,
-                    borderRadius: 2,
-                    cursor: "pointer",
-                    transition: "background 0.15s ease",
-                    "&:hover": { bgcolor: "action.hover" },
-                  }}
-                  onClick={() => handleSelect(term)}
-                >
-                  <History sx={{ fontSize: 15, color: "text.secondary" }} />
-                  <Typography variant="body2" sx={{ flex: 1, fontSize: "0.85rem" }}>
-                    {term}
-                  </Typography>
-                  <IconButton
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeSearch(term);
-                    }}
-                    sx={{ width: 24, height: 24 }}
-                  >
-                    <Close sx={{ fontSize: 13 }} />
-                  </IconButton>
-                </Box>
-              ))}
-            </Box>
-          )}
-
-          {TRENDING_SEARCHES.length > 0 && (
-            <Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, px: 1, mb: 1 }}>
-                <TrendingUp sx={{ fontSize: 14, color: "text.secondary" }} />
-                <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                  Trending
-                </Typography>
-              </Box>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, px: 0.5 }}>
-                {TRENDING_SEARCHES.map((term) => (
-                  <Chip
-                    key={term}
-                    label={term}
-                    size="small"
-                    onClick={() => handleSelect(term)}
+      <AnimatePresence>
+        {showSuggestions && hasSuggestions && (
+          <motion.div
+            variants={suggestionsVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            style={{ position: "absolute", zIndex: 10, left: 0, right: 0, top: "100%" }}
+          >
+            <Box
+              sx={{
+                mt: 1,
+                mx: 0.5,
+                p: 1.5,
+                borderRadius: "16px",
+                bgcolor: (t) =>
+                  t.palette.mode === "dark"
+                    ? "rgba(24, 24, 27, 0.96)"
+                    : "rgba(255, 255, 255, 0.96)",
+                backdropFilter: "blur(24px) saturate(1.8)",
+                WebkitBackdropFilter: "blur(24px) saturate(1.8)",
+                border: "1px solid",
+                borderColor: (t) => t.palette.divider,
+                boxShadow: (t) =>
+                  t.palette.mode === "dark"
+                    ? tokens.shadows.dark.lg
+                    : tokens.shadows.light.lg,
+              }}
+            >
+              {history.length > 0 && (
+                <Box sx={{ mb: 2 }}>
+                  <Box
                     sx={{
-                      cursor: "pointer",
-                      borderRadius: 100,
-                      fontSize: "0.75rem",
-                      height: 30,
-                      fontWeight: 500,
-                      transition: "all 0.2s ease",
-                      "&:hover": {
-                        bgcolor: (theme) =>
-                          theme.palette.mode === "dark"
-                            ? "rgba(124,77,255,0.15)"
-                            : "rgba(98,0,234,0.1)",
-                        borderColor: "primary.main",
-                      },
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      px: 1,
+                      mb: 0.5,
                     }}
-                  />
-                ))}
-              </Box>
+                  >
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      fontWeight={600}
+                      sx={{
+                        fontSize: "0.68rem",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.06em",
+                      }}
+                    >
+                      Recent
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      color="primary.main"
+                      sx={{
+                        cursor: "pointer",
+                        fontSize: "0.68rem",
+                        fontWeight: 600,
+                        "&:hover": { textDecoration: "underline" },
+                      }}
+                      onClick={clearHistory}
+                    >
+                      Clear
+                    </Typography>
+                  </Box>
+                  {history.slice(0, 5).map((term) => (
+                    <Box
+                      key={term}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        px: 1,
+                        py: 0.75,
+                        borderRadius: "10px",
+                        cursor: "pointer",
+                        transition: "background 0.15s ease",
+                        "&:hover": { bgcolor: "action.hover" },
+                      }}
+                      onClick={() => handleSelect(term)}
+                    >
+                      <Clock size={14} style={{ color: tokens.color.textLightSecondary, flexShrink: 0 }} />
+                      <Typography variant="body2" sx={{ flex: 1, fontSize: "0.85rem" }}>
+                        {term}
+                      </Typography>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeSearch(term);
+                        }}
+                        sx={{ width: 24, height: 24, "&:hover": { bgcolor: "action.hover" } }}
+                      >
+                        <X size={12} />
+                      </IconButton>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+
+              {TRENDING_SEARCHES.length > 0 && (
+                <Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 0.5,
+                      px: 1,
+                      mb: 1,
+                    }}
+                  >
+                    <TrendingUp size={13} style={{ color: tokens.color.textLightSecondary }} />
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      fontWeight={600}
+                      sx={{
+                        fontSize: "0.68rem",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.06em",
+                      }}
+                    >
+                      Trending
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, px: 0.5 }}>
+                    {TRENDING_SEARCHES.map((term) => (
+                      <Chip
+                        key={term}
+                        label={term}
+                        size="small"
+                        onClick={() => handleSelect(term)}
+                        sx={{
+                          cursor: "pointer",
+                          borderRadius: "100px",
+                          fontSize: "0.75rem",
+                          height: 30,
+                          fontWeight: 500,
+                          transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                          bgcolor: (t) =>
+                            t.palette.mode === "dark"
+                              ? tokens.color.surface.dark
+                              : tokens.color.surface.light,
+                          "&:hover": {
+                            bgcolor: (t) =>
+                              t.palette.mode === "dark"
+                                ? tokens.color.primaryAlpha15
+                                : tokens.color.primaryAlpha10,
+                            borderColor: "primary.main",
+                          },
+                        }}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              )}
             </Box>
-          )}
-        </Box>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Box>
   );
 }

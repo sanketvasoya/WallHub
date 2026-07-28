@@ -6,30 +6,30 @@ import {
   Typography,
   IconButton,
   Chip,
-  useTheme,
   LinearProgress,
   Tooltip,
   Snackbar,
+  useTheme,
 } from "@mui/material";
-import {
-  ArrowBack,
-  Favorite,
-  FavoriteBorder,
-  Download,
-  Share,
-  OpenInNew,
-  Close,
-  Info,
-  Visibility,
-  CalendarToday,
-  AspectRatio,
-  Storage,
-  Palette,
-  Label,
-  Category,
-  Source,
-} from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  ArrowLeft,
+  Heart,
+  HeartOff,
+  Download,
+  Share2,
+  ExternalLink,
+  X,
+  Info,
+  Eye,
+  Calendar,
+  Maximize,
+  HardDrive,
+  Palette,
+  Tag,
+  Folder,
+  Link2,
+} from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { useWallpaper, useSimilarWallpapers } from "@/hooks/useQueries";
 import { useWallpaperActions } from "@/hooks/useWallpaperActions";
@@ -38,17 +38,42 @@ import { useOrientation } from "@/hooks/useOrientation";
 import WallpaperGrid from "@/components/wallpaper/WallpaperGrid";
 import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 import ErrorState from "@/components/ui/ErrorState";
+import { tokens } from "@/lib/tokens";
 
-function DetailRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function DetailRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, py: 0.75 }}>
-      <Box sx={{ color: "text.secondary", display: "flex", alignItems: "center", width: 20, justifyContent: "center" }}>
+      <Box
+        sx={{
+          color: "text.secondary",
+          display: "flex",
+          alignItems: "center",
+          width: 20,
+          justifyContent: "center",
+        }}
+      >
         {icon}
       </Box>
-      <Typography variant="body2" color="text.secondary" sx={{ minWidth: 90, fontSize: "0.8rem" }}>
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{ minWidth: 90, fontSize: "0.8rem" }}
+      >
         {label}
       </Typography>
-      <Typography variant="body2" fontWeight={500} sx={{ fontSize: "0.8rem" }}>
+      <Typography
+        variant="body2"
+        fontWeight={500}
+        sx={{ fontSize: "0.8rem" }}
+      >
         {value}
       </Typography>
     </Box>
@@ -87,9 +112,11 @@ function WallpaperViewerContent() {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [usePreview, setUsePreview] = useState(true);
-  const [toast, setToast] = useState<{ open: boolean; message: string }>({ open: false, message: "" });
+  const [toast, setToast] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: "",
+  });
 
-  // Zoom state
   const [zoomed, setZoomed] = useState(false);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const isDragging = useRef(false);
@@ -101,7 +128,8 @@ function WallpaperViewerContent() {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const showShortcutsRef = useRef(false);
 
-  const similarWallpapers = similarData?.pages.flatMap((p) => p.wallpapers) ?? [];
+  const similarWallpapers =
+    similarData?.pages.flatMap((p) => p.wallpapers) ?? [];
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: fetchNextSimilar,
@@ -109,7 +137,6 @@ function WallpaperViewerContent() {
     isLoading: fetchingSimilar,
   });
 
-  // Keep showInfoRef and showShortcutsRef in sync
   useEffect(() => {
     showInfoRef.current = showInfo;
   }, [showInfo]);
@@ -118,18 +145,20 @@ function WallpaperViewerContent() {
     showShortcutsRef.current = showShortcuts;
   }, [showShortcuts]);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       const target = e.target;
-      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) return;
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement
+      )
+        return;
 
       if (e.key === "?") {
         e.preventDefault();
         setShowShortcuts((s) => !s);
         return;
       }
-
       if (e.key === "Escape") {
         if (showShortcutsRef.current) {
           setShowShortcuts(false);
@@ -153,24 +182,31 @@ function WallpaperViewerContent() {
       }
       if (e.key === "ArrowLeft" && similarWallpapers.length > 0) {
         const currentIdx = similarWallpapers.findIndex((w) => w.id === id);
-        const prevIdx = currentIdx > 0 ? currentIdx - 1 : similarWallpapers.length - 1;
+        const prevIdx =
+          currentIdx > 0 ? currentIdx - 1 : similarWallpapers.length - 1;
         router.push(`/wallpaper/${similarWallpapers[prevIdx].id}`);
       }
       if (e.key === "ArrowRight" && similarWallpapers.length > 0) {
         const currentIdx = similarWallpapers.findIndex((w) => w.id === id);
-        const nextIdx = currentIdx < similarWallpapers.length - 1 ? currentIdx + 1 : 0;
+        const nextIdx =
+          currentIdx < similarWallpapers.length - 1 ? currentIdx + 1 : 0;
         router.push(`/wallpaper/${similarWallpapers[nextIdx].id}`);
       }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [router, handleToggleFavorite, handleDownload, id, similarWallpapers]);
+  }, [
+    router,
+    handleToggleFavorite,
+    handleDownload,
+    id,
+    similarWallpapers,
+  ]);
 
   const showToast = useCallback((message: string) => {
     setToast({ open: true, message });
   }, []);
 
-  // Image zoom handlers
   const handleDoubleTap = useCallback(
     (e: React.MouseEvent | React.TouchEvent) => {
       const now = Date.now();
@@ -247,10 +283,18 @@ function WallpaperViewerContent() {
     router.push(`/search?q=${encodeURIComponent(tag)}`);
   };
 
-  // Swipe dismiss constraints
-  const dragConstraints = {
-    top: 0,
-    bottom: 300,
+  const iconBtnSx = {
+    color: isDark ? "white" : "text.primary",
+    bgcolor: isDark
+      ? "rgba(255,255,255,0.08)"
+      : "rgba(0,0,0,0.06)",
+    backdropFilter: "blur(12px)",
+    transition: "all 0.2s ease",
+    "&:hover": {
+      bgcolor: isDark
+        ? "rgba(255,255,255,0.15)"
+        : "rgba(0,0,0,0.1)",
+    },
   };
 
   return (
@@ -262,7 +306,6 @@ function WallpaperViewerContent() {
         flexDirection: "column",
       }}
     >
-      {/* Toast */}
       <Snackbar
         open={toast.open}
         autoHideDuration={2000}
@@ -277,7 +320,7 @@ function WallpaperViewerContent() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+          transition={{ duration: 0.4, ease: tokens.animation.curve.standard }}
         >
           <Box
             sx={{
@@ -298,33 +341,37 @@ function WallpaperViewerContent() {
             <IconButton
               onClick={() => router.back()}
               aria-label="Back"
-              sx={{
-                color: isDark ? "white" : "text.primary",
-                bgcolor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
-                backdropFilter: "blur(12px)",
-                "&:hover": { bgcolor: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)" },
-              }}
+              sx={iconBtnSx}
             >
-              <ArrowBack />
+              <ArrowLeft size={20} />
             </IconButton>
             <Box sx={{ display: "flex", gap: 0.75 }}>
-              <Tooltip title={isFavorite ? "Unfavorite (F)" : "Favorite (F)"}>
+              <Tooltip
+                title={isFavorite ? "Unfavorite (F)" : "Favorite (F)"}
+              >
                 <IconButton
                   onClick={handleToggleFavorite}
                   sx={{
-                    color: isFavorite ? "#ff6b9d" : isDark ? "white" : "text.primary",
-                    bgcolor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
-                    backdropFilter: "blur(12px)",
-                    transition: "all 0.2s ease",
-                    "&:hover": { bgcolor: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)" },
+                    ...iconBtnSx,
+                    color: isFavorite
+                      ? "#ff6b9d"
+                      : isDark
+                      ? "white"
+                      : "text.primary",
                   }}
                 >
                   <motion.div
-                    animate={isFavorite ? { scale: [1, 1.4, 1] } : { scale: 1 }}
+                    animate={
+                      isFavorite ? { scale: [1, 1.4, 1] } : { scale: 1 }
+                    }
                     transition={{ duration: 0.3, ease: "easeOut" }}
                     style={{ display: "flex" }}
                   >
-                    {isFavorite ? <Favorite /> : <FavoriteBorder />}
+                    {isFavorite ? (
+                      <Heart size={20} fill="#ff6b9d" />
+                    ) : (
+                      <HeartOff size={20} />
+                    )}
                   </motion.div>
                 </IconButton>
               </Tooltip>
@@ -332,16 +379,17 @@ function WallpaperViewerContent() {
                 <IconButton
                   onClick={handleDownload}
                   disabled={downloading}
-                  sx={{
-                    color: isDark ? "white" : "text.primary",
-                    bgcolor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
-                    backdropFilter: "blur(12px)",
-                    transition: "all 0.2s ease",
-                    "&:hover": { bgcolor: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)" },
-                  }}
+                  sx={iconBtnSx}
                 >
                   {downloading ? (
-                    <Box sx={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Box
+                      sx={{
+                        position: "relative",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
                       <svg width={22} height={22} viewBox="0 0 22 22">
                         <circle
                           cx={11}
@@ -359,58 +407,55 @@ function WallpaperViewerContent() {
                           fill="none"
                           stroke="currentColor"
                           strokeWidth={2}
-                          strokeDasharray={`${(downloadProgress ?? 0) * 0.56} 56`}
+                          strokeDasharray={`${
+                            (downloadProgress ?? 0) * 0.56
+                          } 56`}
                           strokeLinecap="round"
                           transform="rotate(-90 11 11)"
                         />
                       </svg>
                     </Box>
                   ) : (
-                    <Download />
+                    <Download size={20} />
                   )}
                 </IconButton>
               </Tooltip>
               <Tooltip title="Share">
                 <IconButton
                   onClick={handleShare}
-                  sx={{
-                    color: isDark ? "white" : "text.primary",
-                    bgcolor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
-                    backdropFilter: "blur(12px)",
-                    transition: "all 0.2s ease",
-                    "&:hover": { bgcolor: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)" },
-                  }}
+                  sx={iconBtnSx}
                 >
-                  <Share />
+                  <Share2 size={20} />
                 </IconButton>
               </Tooltip>
               <Tooltip title="Info (I)">
                 <IconButton
                   onClick={() => setShowInfo((s) => !s)}
                   sx={{
-                    color: showInfo ? "#00e5ff" : isDark ? "white" : "text.primary",
-                    bgcolor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
-                    backdropFilter: "blur(12px)",
-                    transition: "all 0.2s ease",
-                    "&:hover": { bgcolor: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)" },
+                    ...iconBtnSx,
+                    color: showInfo
+                      ? tokens.color.accent
+                      : isDark
+                      ? "white"
+                      : "text.primary",
                   }}
                 >
-                  <Info />
+                  <Info size={20} />
                 </IconButton>
               </Tooltip>
               {wallpaper && (
                 <Tooltip title="Open original">
                   <IconButton
-                    onClick={() => window.open(wallpaper.originalUrl, "_blank", "noopener,noreferrer")}
-                    sx={{
-                      color: isDark ? "white" : "text.primary",
-                      bgcolor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
-                      backdropFilter: "blur(12px)",
-                      transition: "all 0.2s ease",
-                      "&:hover": { bgcolor: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)" },
-                    }}
+                    onClick={() =>
+                      window.open(
+                        wallpaper.originalUrl,
+                        "_blank",
+                        "noopener,noreferrer"
+                      )
+                    }
+                    sx={iconBtnSx}
                   >
-                    <OpenInNew />
+                    <ExternalLink size={20} />
                   </IconButton>
                 </Tooltip>
               )}
@@ -421,26 +466,36 @@ function WallpaperViewerContent() {
 
       {/* Download Progress */}
       <AnimatePresence>
-        {downloading && downloadProgress !== null && downloadProgress < 100 && (
-          <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            style={{ position: "fixed", top: 56, left: 0, right: 0, zIndex: 11 }}
-          >
-            <LinearProgress
-              variant="determinate"
-              value={downloadProgress}
-              sx={{
-                height: 3,
-                bgcolor: "rgba(124,77,255,0.15)",
-                "& .MuiLinearProgress-bar": {
-                  background: "linear-gradient(90deg, #7c4dff, #00e5ff)",
-                },
+        {downloading &&
+          downloadProgress !== null &&
+          downloadProgress < 100 && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              style={{
+                position: "fixed",
+                top: 56,
+                left: 0,
+                right: 0,
+                zIndex: 11,
               }}
-            />
-          </motion.div>
-        )}
+            >
+              <LinearProgress
+                variant="determinate"
+                value={downloadProgress}
+                sx={{
+                  height: 3,
+                  bgcolor: isDark
+                    ? tokens.color.primaryAlpha15
+                    : tokens.color.primaryAlpha10,
+                  "& .MuiLinearProgress-bar": {
+                    background: tokens.gradient.primary,
+                  },
+                }}
+              />
+            </motion.div>
+          )}
       </AnimatePresence>
 
       {/* Main Image Area */}
@@ -460,24 +515,42 @@ function WallpaperViewerContent() {
         {isLoading ? (
           <LoadingSkeleton count={1} variant="list" />
         ) : isError || !wallpaper ? (
-          <ErrorState message="Wallpaper not found" onRetry={() => router.back()} />
+          <ErrorState
+            message="Wallpaper not found"
+            onRetry={() => router.back()}
+          />
         ) : (
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-            style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}
+            transition={{
+              duration: 0.4,
+              ease: tokens.animation.curve.standard,
+            }}
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
             <motion.div
               drag={zoomed ? false : "y"}
-              dragConstraints={dragConstraints}
+              dragConstraints={{ top: 0, bottom: 300 }}
               dragElastic={0.2}
               onDragEnd={(_e, info) => {
                 if (info.offset.y > SWIPE_DISMISS_THRESHOLD) {
                   router.back();
                 }
               }}
-              style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
               <Box
                 ref={imageContainerRef}
@@ -499,7 +572,6 @@ function WallpaperViewerContent() {
                 onPointerUp={handlePointerUp}
                 onPointerCancel={handlePointerUp}
               >
-                {/* Blur placeholder / preview */}
                 {usePreview && wallpaper.preview && !imageError && (
                   <Box
                     component="img"
@@ -517,13 +589,18 @@ function WallpaperViewerContent() {
                   />
                 )}
 
-                {/* Full-res image */}
                 {!imageError && (
                   <motion.img
                     layoutId={`wallpaper-image-${wallpaper.id}`}
-                    src={usePreview ? (wallpaper.thumbnail || wallpaper.preview) : wallpaper.image}
+                    src={
+                      usePreview
+                        ? wallpaper.thumbnail || wallpaper.preview
+                        : wallpaper.image
+                    }
                     alt={wallpaper.title}
-                    onLoad={usePreview ? handleFullImageLoad : undefined}
+                    onLoad={
+                      usePreview ? handleFullImageLoad : undefined
+                    }
                     onError={handleImageError}
                     style={{
                       maxWidth: "100%",
@@ -532,8 +609,14 @@ function WallpaperViewerContent() {
                       borderRadius: 8,
                       position: "relative",
                       zIndex: 1,
-                      transform: `scale(${zoomed ? ZOOM_SCALE : 1}) translate(${panOffset.x / (zoomed ? ZOOM_SCALE : 1)}px, ${panOffset.y / (zoomed ? ZOOM_SCALE : 1)}px)`,
-                      transition: isDragging.current ? "none" : "transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                      transform: `scale(${
+                        zoomed ? ZOOM_SCALE : 1
+                      }) translate(${
+                        panOffset.x / (zoomed ? ZOOM_SCALE : 1)
+                      }px, ${panOffset.y / (zoomed ? ZOOM_SCALE : 1)}px)`,
+                      transition: isDragging.current
+                        ? "none"
+                        : "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
                       opacity: imageLoaded || usePreview ? 1 : 0,
                     }}
                   />
@@ -549,18 +632,25 @@ function WallpaperViewerContent() {
                       color: "text.secondary",
                     }}
                   >
-                    <Close sx={{ fontSize: 40, opacity: 0.5 }} />
-                    <Typography variant="body2">Failed to load image</Typography>
+                    <X size={40} style={{ opacity: 0.5 }} />
+                    <Typography variant="body2">
+                      Failed to load image
+                    </Typography>
                     <Chip
                       label="Open original"
-                      onClick={() => window.open(wallpaper.originalUrl, "_blank", "noopener,noreferrer")}
-                      icon={<OpenInNew sx={{ fontSize: 14 }} />}
+                      onClick={() =>
+                        window.open(
+                          wallpaper.originalUrl,
+                          "_blank",
+                          "noopener,noreferrer"
+                        )
+                      }
+                      icon={<ExternalLink size={14} />}
                       sx={{ cursor: "pointer" }}
                     />
                   </Box>
                 )}
 
-                {/* Gradient overlay at bottom */}
                 <Box
                   sx={{
                     position: "absolute",
@@ -568,13 +658,14 @@ function WallpaperViewerContent() {
                     left: 0,
                     right: 0,
                     height: "30%",
-                    background: `linear-gradient(to top, ${isDark ? "#05050a" : "#f8f8fc"} 0%, transparent 100%)`,
+                    background: `linear-gradient(to top, ${
+                      isDark ? "#05050a" : "#f8f8fc"
+                    } 0%, transparent 100%)`,
                     pointerEvents: "none",
                     zIndex: 2,
                   }}
                 />
 
-                {/* Zoom indicator */}
                 <AnimatePresence>
                   {zoomed && (
                     <motion.div
@@ -590,10 +681,12 @@ function WallpaperViewerContent() {
                       }}
                     >
                       <Chip
-                        label={`${ZOOM_SCALE}x · Double-tap to exit`}
+                        label={`${ZOOM_SCALE}x \u00B7 Double-tap to exit`}
                         size="small"
                         sx={{
-                          bgcolor: isDark ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.8)",
+                          bgcolor: isDark
+                            ? "rgba(0,0,0,0.7)"
+                            : "rgba(255,255,255,0.8)",
                           backdropFilter: "blur(8px)",
                           fontSize: "0.7rem",
                         }}
@@ -607,19 +700,30 @@ function WallpaperViewerContent() {
         )}
       </Box>
 
-      {/* Info Panel (bottom sheet) */}
+      {/* Info Panel */}
       <AnimatePresence>
         {showInfo && wallpaper && (
           <motion.div
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
-            transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-            style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 10 }}
+            transition={{
+              duration: 0.35,
+              ease: tokens.animation.curve.standard,
+            }}
+            style={{
+              position: "fixed",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 10,
+            }}
           >
             <Box
               sx={{
-                bgcolor: isDark ? "rgba(14,14,22,0.96)" : "rgba(255,255,255,0.96)",
+                bgcolor: isDark
+                  ? "rgba(14,14,22,0.96)"
+                  : "rgba(255,255,255,0.96)",
                 backdropFilter: "blur(40px) saturate(1.5)",
                 WebkitBackdropFilter: "blur(40px) saturate(1.5)",
                 borderRadius: "28px 28px 0 0",
@@ -628,34 +732,100 @@ function WallpaperViewerContent() {
                 overflowY: "auto",
               }}
             >
-              <Box sx={{ width: 36, height: 4, bgcolor: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.12)", borderRadius: 3, mx: "auto", mb: 2.5 }} />
+              <Box
+                sx={{
+                  width: 36,
+                  height: 4,
+                  bgcolor: isDark
+                    ? "rgba(255,255,255,0.15)"
+                    : "rgba(0,0,0,0.12)",
+                  borderRadius: 3,
+                  mx: "auto",
+                  mb: 2.5,
+                }}
+              />
 
-              <Typography variant="h6" fontWeight={700} sx={{ mb: 2, fontSize: "1.05rem" }}>
+              <Typography
+                variant="h6"
+                fontWeight={700}
+                sx={{ mb: 2, fontSize: "1.05rem" }}
+              >
                 Wallpaper Details
               </Typography>
 
               <Box sx={{ mb: 2 }}>
-                <DetailRow icon={<AspectRatio sx={{ fontSize: 16 }} />} label="Resolution" value={`${wallpaper.width} x ${wallpaper.height}`} />
-                <DetailRow icon={<AspectRatio sx={{ fontSize: 16 }} />} label="Aspect" value={wallpaper.aspectRatio} />
-                <DetailRow icon={<Storage sx={{ fontSize: 16 }} />} label="File size" value={wallpaper.filesize} />
-                <DetailRow icon={<Category sx={{ fontSize: 16 }} />} label="Category" value={wallpaper.subreddit} />
-                <DetailRow icon={<Source sx={{ fontSize: 16 }} />} label="Source" value={wallpaper.source || "Wallhaven"} />
-                <DetailRow icon={<Visibility sx={{ fontSize: 16 }} />} label="Views" value={wallpaper.views?.toLocaleString() || "N/A"} />
-                <DetailRow icon={<CalendarToday sx={{ fontSize: 16 }} />} label="Date" value={formatDate(wallpaper.createdAt)} />
+                <DetailRow
+                  icon={<Maximize size={16} />}
+                  label="Resolution"
+                  value={`${wallpaper.width} x ${wallpaper.height}`}
+                />
+                <DetailRow
+                  icon={<Maximize size={16} />}
+                  label="Aspect"
+                  value={wallpaper.aspectRatio}
+                />
+                <DetailRow
+                  icon={<HardDrive size={16} />}
+                  label="File size"
+                  value={wallpaper.filesize}
+                />
+                <DetailRow
+                  icon={<Folder size={16} />}
+                  label="Category"
+                  value={wallpaper.subreddit}
+                />
+                <DetailRow
+                  icon={<Link2 size={16} />}
+                  label="Source"
+                  value={wallpaper.source || "Wallhaven"}
+                />
+                <DetailRow
+                  icon={<Eye size={16} />}
+                  label="Views"
+                  value={wallpaper.views?.toLocaleString() || "N/A"}
+                />
+                <DetailRow
+                  icon={<Calendar size={16} />}
+                  label="Date"
+                  value={formatDate(wallpaper.createdAt)}
+                />
               </Box>
 
-              {/* Color palette */}
               {wallpaper.colors && wallpaper.colors.length > 0 && (
                 <Box sx={{ mb: 2.5 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-                    <Palette sx={{ fontSize: 16, color: "text.secondary" }} />
-                    <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mb: 1,
+                    }}
+                  >
+                    <Palette
+                      size={16}
+                      style={{ color: tokens.color.textDarkSecondary }}
+                    />
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      fontWeight={600}
+                      sx={{
+                        fontSize: "0.7rem",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.06em",
+                      }}
+                    >
                       Color Palette
                     </Typography>
                   </Box>
-                  <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                  <Box
+                    sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}
+                  >
                     {wallpaper.colors.map((color, i) => (
-                      <Tooltip key={i} title={`Click to copy ${color}`}>
+                      <Tooltip
+                        key={i}
+                        title={`Click to copy ${color}`}
+                      >
                         <Box
                           onClick={() => handleColorClick(color)}
                           sx={{
@@ -664,10 +834,14 @@ function WallpaperViewerContent() {
                             borderRadius: 2,
                             bgcolor: color,
                             border: "2px solid",
-                            borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
+                            borderColor: isDark
+                              ? "rgba(255,255,255,0.1)"
+                              : "rgba(0,0,0,0.08)",
                             cursor: "pointer",
                             transition: "transform 0.15s ease",
-                            "&:hover": { transform: "scale(1.15)" },
+                            "&:hover": {
+                              transform: "scale(1.15)",
+                            },
                           }}
                         />
                       </Tooltip>
@@ -676,16 +850,40 @@ function WallpaperViewerContent() {
                 </Box>
               )}
 
-              {/* Tags */}
               {wallpaper.tags && wallpaper.tags.length > 0 && (
                 <Box sx={{ mb: 2.5 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-                    <Label sx={{ fontSize: 16, color: "text.secondary" }} />
-                    <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mb: 1,
+                    }}
+                  >
+                    <Tag
+                      size={16}
+                      style={{ color: tokens.color.textDarkSecondary }}
+                    />
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      fontWeight={600}
+                      sx={{
+                        fontSize: "0.7rem",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.06em",
+                      }}
+                    >
                       Tags
                     </Typography>
                   </Box>
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 0.75,
+                    }}
+                  >
                     {wallpaper.tags.map((tag, i) => (
                       <Chip
                         key={i}
@@ -698,9 +896,13 @@ function WallpaperViewerContent() {
                           height: 26,
                           fontWeight: 500,
                           cursor: "pointer",
-                          bgcolor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+                          bgcolor: isDark
+                            ? "rgba(255,255,255,0.06)"
+                            : "rgba(0,0,0,0.04)",
                           "&:hover": {
-                            bgcolor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)",
+                            bgcolor: isDark
+                              ? "rgba(255,255,255,0.12)"
+                              : "rgba(0,0,0,0.08)",
                           },
                         }}
                       />
@@ -709,12 +911,13 @@ function WallpaperViewerContent() {
                 </Box>
               )}
 
-              {/* Action buttons */}
               <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
                 <Chip
-                  label={downloading ? "Downloading..." : "Download"}
+                  label={
+                    downloading ? "Downloading..." : "Download"
+                  }
                   onClick={handleDownload}
-                  icon={<Download sx={{ fontSize: 15 }} />}
+                  icon={<Download size={15} />}
                   sx={{
                     bgcolor: "primary.main",
                     color: "white",
@@ -726,12 +929,20 @@ function WallpaperViewerContent() {
                 />
                 <Chip
                   label="Open Original"
-                  onClick={() => window.open(wallpaper.originalUrl, "_blank", "noopener,noreferrer")}
-                  icon={<OpenInNew sx={{ fontSize: 15 }} />}
+                  onClick={() =>
+                    window.open(
+                      wallpaper.originalUrl,
+                      "_blank",
+                      "noopener,noreferrer"
+                    )
+                  }
+                  icon={<ExternalLink size={15} />}
                   variant="outlined"
                   sx={{
                     color: isDark ? "white" : "text.primary",
-                    borderColor: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.15)",
+                    borderColor: isDark
+                      ? "rgba(255,255,255,0.2)"
+                      : "rgba(0,0,0,0.15)",
                     cursor: "pointer",
                     height: 36,
                     fontWeight: 500,
@@ -750,7 +961,14 @@ function WallpaperViewerContent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={{ position: "fixed", inset: 0, zIndex: 20, display: "flex", alignItems: "center", justifyContent: "center" }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 20,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
             onClick={() => setShowShortcuts(false)}
           >
             <Box
@@ -770,14 +988,20 @@ function WallpaperViewerContent() {
             >
               <Box
                 sx={{
-                  bgcolor: isDark ? "rgba(14,14,22,0.96)" : "rgba(255,255,255,0.96)",
+                  bgcolor: isDark
+                    ? "rgba(14,14,22,0.96)"
+                    : "rgba(255,255,255,0.96)",
                   borderRadius: 4,
                   p: 3,
                   minWidth: 280,
                   backdropFilter: "blur(40px)",
                 }}
               >
-                <Typography variant="h6" fontWeight={700} sx={{ mb: 2, fontSize: "1rem" }}>
+                <Typography
+                  variant="h6"
+                  fontWeight={700}
+                  sx={{ mb: 2, fontSize: "1rem" }}
+                >
                   Keyboard Shortcuts
                 </Typography>
                 {[
@@ -788,9 +1012,32 @@ function WallpaperViewerContent() {
                   ["\u2190 / \u2192", "Navigate similar wallpapers"],
                   ["Esc", "Close panel / Go back"],
                 ].map(([key, desc]) => (
-                  <Box key={key} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", py: 0.5 }}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.8rem" }}>{desc}</Typography>
-                    <Chip label={key} size="small" sx={{ height: 22, fontSize: "0.7rem", fontWeight: 600, ml: 2 }} />
+                  <Box
+                    key={key}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      py: 0.5,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: "0.8rem" }}
+                    >
+                      {desc}
+                    </Typography>
+                    <Chip
+                      label={key}
+                      size="small"
+                      sx={{
+                        height: 22,
+                        fontSize: "0.7rem",
+                        fontWeight: 600,
+                        ml: 2,
+                      }}
+                    />
                   </Box>
                 ))}
               </Box>
@@ -802,8 +1049,12 @@ function WallpaperViewerContent() {
       {/* Similar Wallpapers Section */}
       {wallpaper && (
         <Box sx={{ pb: { xs: 12, sm: 4 } }}>
-          <Box sx={{ px: { xs: 1.5, sm: 2, md: 3 }, mb: 2 }}>
-            <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: "1rem", sm: "1.1rem" } }}>
+          <Box sx={{ px: { xs: 2, sm: 3 }, mb: 2 }}>
+            <Typography
+              variant="h6"
+              fontWeight={700}
+              sx={{ fontSize: { xs: "1rem", sm: "1.1rem" } }}
+            >
               Similar Wallpapers
             </Typography>
           </Box>
@@ -811,15 +1062,23 @@ function WallpaperViewerContent() {
             <>
               <WallpaperGrid wallpapers={similarWallpapers} />
               {fetchingSimilar && (
-                <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    py: 3,
+                  }}
+                >
                   <LinearProgress
                     sx={{
                       width: 120,
                       height: 3,
                       borderRadius: 2,
-                      bgcolor: "rgba(124,77,255,0.15)",
+                      bgcolor: isDark
+                        ? tokens.color.primaryAlpha15
+                        : tokens.color.primaryAlpha10,
                       "& .MuiLinearProgress-bar": {
-                        background: "linear-gradient(90deg, #7c4dff, #00e5ff)",
+                        background: tokens.gradient.primary,
                       },
                     }}
                   />
@@ -829,7 +1088,14 @@ function WallpaperViewerContent() {
             </>
           ) : (
             !fetchingSimilar && (
-              <Typography variant="body2" color="text.secondary" sx={{ px: { xs: 1.5, sm: 2, md: 3 }, py: 2 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  px: { xs: 2, sm: 3 },
+                  py: 2,
+                }}
+              >
                 No similar wallpapers found.
               </Typography>
             )
@@ -860,48 +1126,78 @@ function WallpaperViewerContent() {
           backdropFilter: "blur(24px) saturate(1.5)",
           WebkitBackdropFilter: "blur(24px) saturate(1.5)",
           borderTop: "1px solid",
-          borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+          borderColor: isDark
+            ? "rgba(255,255,255,0.06)"
+            : "rgba(0,0,0,0.06)",
         }}
       >
         <IconButton
           onClick={handleToggleFavorite}
           sx={{
-            color: isFavorite ? "#ff6b9d" : isDark ? "white" : "text.primary",
+            color: isFavorite
+              ? "#ff6b9d"
+              : isDark
+              ? "white"
+              : "text.primary",
           }}
         >
           <motion.div
-            animate={isFavorite ? { scale: [1, 1.4, 1] } : { scale: 1 }}
+            animate={
+              isFavorite ? { scale: [1, 1.4, 1] } : { scale: 1 }
+            }
             transition={{ duration: 0.3, ease: "easeOut" }}
             style={{ display: "flex" }}
           >
-            {isFavorite ? <Favorite /> : <FavoriteBorder />}
+            {isFavorite ? (
+              <Heart size={20} fill="#ff6b9d" />
+            ) : (
+              <HeartOff size={20} />
+            )}
           </motion.div>
         </IconButton>
         <IconButton
           onClick={handleDownload}
           disabled={downloading}
-          sx={{ color: isDark ? "white" : "text.primary" }}
+          sx={{
+            color: isDark ? "white" : "text.primary",
+          }}
         >
-          <Download />
+          <Download size={20} />
         </IconButton>
         <IconButton
           onClick={handleShare}
-          sx={{ color: isDark ? "white" : "text.primary" }}
+          sx={{
+            color: isDark ? "white" : "text.primary",
+          }}
         >
-          <Share />
+          <Share2 size={20} />
         </IconButton>
         <IconButton
           onClick={() => setShowInfo((s) => !s)}
-          sx={{ color: showInfo ? "#00e5ff" : isDark ? "white" : "text.primary" }}
+          sx={{
+            color: showInfo
+              ? tokens.color.accent
+              : isDark
+              ? "white"
+              : "text.primary",
+          }}
         >
-          <Info />
+          <Info size={20} />
         </IconButton>
         {wallpaper && (
           <IconButton
-            onClick={() => window.open(wallpaper.originalUrl, "_blank", "noopener,noreferrer")}
-            sx={{ color: isDark ? "white" : "text.primary" }}
+            onClick={() =>
+              window.open(
+                wallpaper.originalUrl,
+                "_blank",
+                "noopener,noreferrer"
+              )
+            }
+            sx={{
+              color: isDark ? "white" : "text.primary",
+            }}
           >
-            <OpenInNew />
+            <ExternalLink size={20} />
           </IconButton>
         )}
       </Box>
