@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Typography, Button } from "@mui/material";
-import { TrendingUp, ArrowForward, Whatshot, NewReleases, AutoAwesome, Shuffle } from "@mui/icons-material";
+import { TrendingUp, ArrowForward, Whatshot, AutoAwesome } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import BottomNav from "@/components/layout/BottomNav";
@@ -11,18 +11,15 @@ import WallpaperGrid from "@/components/wallpaper/WallpaperGrid";
 import WallpaperHero from "@/components/wallpaper/WallpaperHero";
 import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 import ErrorState from "@/components/ui/ErrorState";
-import { useWallpapers, useCollections } from "@/hooks/useQueries";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
-import { useOrientation } from "@/hooks/useOrientation";
-import { useMemo } from "react";
+import { useHomepage, useCollections } from "@/hooks/useQueries";
 
 const quickCategories = [
+  { slug: "minimal", name: "Minimal", icon: "Minimize", description: "Clean & simple", subreddits: [] },
   { slug: "space", name: "Space", icon: "RocketLaunch", description: "Cosmic & galaxy", subreddits: [] },
   { slug: "nature", name: "Nature", icon: "Park", description: "Landscapes & forests", subreddits: [] },
   { slug: "amoled", name: "AMOLED", icon: "Circle", description: "Pure darks", subreddits: [] },
-  { slug: "anime", name: "Anime", icon: "Animation", description: "Art & illustration", subreddits: [] },
-  { slug: "minimal", name: "Minimal", icon: "Minimize", description: "Clean & simple", subreddits: [] },
-  { slug: "cyberpunk", name: "Cyberpunk", icon: "Memory", description: "Neon & futuristic", subreddits: [] },
+  { slug: "architecture", name: "Architecture", icon: "AccountBalance", description: "Modern design", subreddits: [] },
+  { slug: "abstract", name: "Abstract", icon: "BubbleChart", description: "Art & gradients", subreddits: [] },
 ];
 
 function SectionHeader({ title, icon, onSeeAll }: { title: string; icon: React.ReactNode; onSeeAll?: () => void }) {
@@ -68,60 +65,44 @@ function SectionHeader({ title, icon, onSeeAll }: { title: string; icon: React.R
 
 function HomeContent() {
   const router = useRouter();
-  const { ratios, atleast } = useOrientation();
-  const {
-    data: wallpapersData,
-    isLoading,
-    isError,
-    refetch,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useWallpapers("trending", "hot", ratios, atleast);
-  
-  const allWallpapers = useMemo(
-    () => wallpapersData?.pages.flatMap((p) => p.wallpapers) ?? [],
-    [wallpapersData]
-  );
-
-  const newArrivals = useWallpapers("trending", "new", ratios, atleast);
-  const newWallpapers = useMemo(
-    () => newArrivals.data?.pages.flatMap((p) => p.wallpapers).slice(0, 8) ?? [],
-    [newArrivals.data]
-  );
-
-  const editorsPicks = useWallpapers("trending", "top", ratios, atleast);
-  const editorWallpapers = useMemo(
-    () => editorsPicks.data?.pages.flatMap((p) => p.wallpapers).slice(0, 8) ?? [],
-    [editorsPicks.data]
-  );
-
+  const { data: homepage, isLoading, isError, refetch } = useHomepage();
   const { data: collectionsData } = useCollections();
   const collections = collectionsData?.collections?.slice(0, 4) ?? [];
 
-  const { sentinelRef } = useInfiniteScroll({
-    onLoadMore: fetchNextPage,
-    hasMore: !!hasNextPage,
-    isLoading: isFetchingNextPage,
-  });
+  if (isLoading) {
+    return (
+      <Box sx={{ pb: { xs: 10, sm: 4 } }}>
+        <Header />
+        <LoadingSkeleton variant="hero" />
+        <LoadingSkeleton count={12} />
+        <BottomNav />
+      </Box>
+    );
+  }
+
+  if (isError || !homepage) {
+    return (
+      <Box sx={{ pb: { xs: 10, sm: 4 } }}>
+        <Header />
+        <ErrorState message="Failed to load homepage" onRetry={() => refetch()} />
+        <BottomNav />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ pb: { xs: 10, sm: 4 } }}>
       <Header />
       
       {/* Hero Banner */}
-      {isLoading ? (
-        <LoadingSkeleton variant="hero" />
-      ) : (
-        <WallpaperHero wallpapers={allWallpapers} />
-      )}
+      <WallpaperHero wallpapers={homepage.hero} />
 
       {/* Quick Categories */}
       <Box sx={{ mt: 4, mb: 2 }}>
         <SectionHeader
           title="Categories"
           icon={<Whatshot sx={{ color: "primary.main", fontSize: 22 }} />}
-          onSeeAll={() => router.push("/category/trending")}
+          onSeeAll={() => router.push("/category/minimal")}
         />
         <Box
           sx={{
@@ -160,53 +141,17 @@ function HomeContent() {
         </Box>
       )}
 
-      {/* Trending Now */}
-      <Box sx={{ mt: 4 }}>
-        <SectionHeader
-          title="Trending Now"
-          icon={<TrendingUp sx={{ color: "error.main", fontSize: 22 }} />}
-          onSeeAll={() => router.push("/category/trending")}
-        />
-        {isLoading ? (
-          <LoadingSkeleton count={8} />
-        ) : isError ? (
-          <ErrorState message="Failed to load wallpapers" onRetry={() => refetch()} />
-        ) : (
-          <WallpaperGrid wallpapers={allWallpapers} />
-        )}
-      </Box>
-
-      {/* New Arrivals */}
-      {newWallpapers.length > 0 && (
-        <Box sx={{ mt: 5 }}>
+      {/* Curated Sections */}
+      {homepage.sections.map((section) => (
+        <Box key={section.id} sx={{ mt: 5 }}>
           <SectionHeader
-            title="New Arrivals"
-            icon={<NewReleases sx={{ color: "success.main", fontSize: 22 }} />}
-            onSeeAll={() => router.push("/category/trending?sort=new")}
+            title={section.name}
+            icon={<TrendingUp sx={{ color: "error.main", fontSize: 22 }} />}
+            onSeeAll={() => router.push(`/category/${section.id}`)}
           />
-          <WallpaperGrid wallpapers={newWallpapers} />
+          <WallpaperGrid wallpapers={section.wallpapers} />
         </Box>
-      )}
-
-      {/* Editor's Picks */}
-      {editorWallpapers.length > 0 && (
-        <Box sx={{ mt: 5 }}>
-          <SectionHeader
-            title="Editor's Choice"
-            icon={<Shuffle sx={{ color: "info.main", fontSize: 22 }} />}
-            onSeeAll={() => router.push("/category/trending?sort=top")}
-          />
-          <WallpaperGrid wallpapers={editorWallpapers} />
-        </Box>
-      )}
-
-      {isFetchingNextPage && (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-          <LoadingSkeleton count={4} />
-        </Box>
-      )}
-
-      {hasNextPage && <div ref={sentinelRef} style={{ height: 1 }} />}
+      ))}
 
       <BottomNav />
     </Box>
@@ -216,4 +161,3 @@ function HomeContent() {
 export default function HomePage() {
   return <HomeContent />;
 }
-

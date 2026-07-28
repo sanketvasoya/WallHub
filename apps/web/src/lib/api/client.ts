@@ -10,6 +10,18 @@ import type {
   Collection,
 } from "@/types";
 
+export interface HomepageSection {
+  id: string;
+  name: string;
+  wallpapers: Wallpaper[];
+}
+
+export interface HomepageResponse {
+  hero: Wallpaper[];
+  sections: HomepageSection[];
+  generatedAt: string;
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 const api = axios.create({
@@ -100,6 +112,11 @@ export async function fetchCollection(
   page: number = 1
 ): Promise<{ collection: Collection; wallpapers: Wallpaper[]; totalResults: number; page: number }> {
   const { data } = await api.get(`/collections/${slug}`, { params: { page } });
+  return data;
+}
+
+export async function fetchHomepage(): Promise<HomepageResponse> {
+  const { data } = await api.get<HomepageResponse>("/homepage");
   return data;
 }
 

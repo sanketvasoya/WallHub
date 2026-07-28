@@ -11,6 +11,7 @@ import {
   searchWallpapers,
   fetchCollections,
   fetchCollection,
+  fetchHomepage,
 } from "@/lib/api/client";
 
 export function useCategories() {
@@ -102,11 +103,20 @@ export function useCollection(slug: string) {
     queryKey: ["collection", slug],
     queryFn: ({ pageParam = 1 }) => fetchCollection(slug, pageParam),
     getNextPageParam: (lastPage) => {
-      if (lastPage.page >= 3) return undefined; // Cap at 3 pages
+      if (lastPage.page >= 3) return undefined;
       return lastPage.page + 1;
     },
     initialPageParam: 1,
     enabled: !!slug,
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useHomepage() {
+  return useQuery({
+    queryKey: ["homepage"],
+    queryFn: fetchHomepage,
+    staleTime: 15 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 }

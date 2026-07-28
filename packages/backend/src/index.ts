@@ -9,7 +9,9 @@ import { categoryRoutes } from "./routes/categories.js";
 import { wallpaperRoutes } from "./routes/wallpaper.routes.js";
 import { analyticsRoutes } from "./routes/analytics.routes.js";
 import { collectionRoutes } from "./routes/collection.routes.js";
+import { homepageRoutes } from "./routes/homepage.routes.js";
 import { initLogger } from "./utils/logger.js";
+import { warmupHomepageCache } from "./services/homepage.service.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { requestId } from "./middleware/request-id.js";
 
@@ -62,10 +64,16 @@ await app.register(categoryRoutes);
 await app.register(wallpaperRoutes);
 await app.register(analyticsRoutes);
 await app.register(collectionRoutes);
+await app.register(homepageRoutes);
 
 // Connect Redis on startup
 createRedisClient();
 await connectRedis();
+
+// Warmup homepage cache
+warmupHomepageCache().catch(() => {
+  app.log.warn("Homepage cache warmup failed, will retry on first request");
+});
 
 async function shutdown() {
   app.log.info("Shutting down...");
