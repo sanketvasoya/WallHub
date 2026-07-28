@@ -4,9 +4,13 @@ import { get, set, del, keys } from "idb-keyval";
 import type { ThemeMode, SortOption } from "@/types";
 import type { DownloadHistoryEntry } from "@wallhub/types";
 
+type GridDensity = "compact" | "comfortable" | "spacious";
+
 interface SettingsState {
   theme: ThemeMode;
   setTheme: (theme: ThemeMode) => void;
+  gridDensity: GridDensity;
+  setGridDensity: (density: GridDensity) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -14,6 +18,8 @@ export const useSettingsStore = create<SettingsState>()(
     (set) => ({
       theme: "dark",
       setTheme: (theme) => set({ theme }),
+      gridDensity: "comfortable" as GridDensity,
+      setGridDensity: (gridDensity) => set({ gridDensity }),
     }),
     { name: "wallhub-settings" }
   )

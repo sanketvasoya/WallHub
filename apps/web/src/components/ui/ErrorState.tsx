@@ -1,20 +1,49 @@
 "use client";
 
 import { Box, Typography, Button } from "@mui/material";
-import { SentimentDissatisfied, Refresh } from "@mui/icons-material";
+import {
+  SentimentDissatisfied,
+  Refresh,
+  WifiOff,
+  Timer,
+  SearchOff,
+  FolderOff,
+} from "@mui/icons-material";
 import { motion } from "framer-motion";
+
+export type ErrorType = "notFound" | "network" | "rateLimit" | "empty" | "generic";
 
 interface ErrorStateProps {
   message?: string;
+  type?: ErrorType;
   onRetry?: () => void;
 }
 
-export default function ErrorState({ message = "Something went wrong", onRetry }: ErrorStateProps) {
+export default function ErrorState({
+  message = "Something went wrong",
+  type = "generic",
+  onRetry,
+}: ErrorStateProps) {
+  const getIcon = () => {
+    switch (type) {
+      case "network":
+        return <WifiOff sx={{ fontSize: 40, color: "warning.main" }} />;
+      case "rateLimit":
+        return <Timer sx={{ fontSize: 40, color: "error.main" }} />;
+      case "notFound":
+        return <SearchOff sx={{ fontSize: 40, color: "text.secondary" }} />;
+      case "empty":
+        return <FolderOff sx={{ fontSize: 40, color: "text.secondary" }} />;
+      default:
+        return <SentimentDissatisfied sx={{ fontSize: 40, color: "text.secondary" }} />;
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+      transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
     >
       <Box
         sx={{
@@ -22,9 +51,10 @@ export default function ErrorState({ message = "Something went wrong", onRetry }
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          py: 10,
+          py: 8,
           gap: 2,
           px: 3,
+          textAlign: "center",
         }}
       >
         <Box
@@ -39,13 +69,23 @@ export default function ErrorState({ message = "Something went wrong", onRetry }
               theme.palette.mode === "dark"
                 ? "rgba(255,255,255,0.03)"
                 : "rgba(0,0,0,0.03)",
+            border: "1px solid",
+            borderColor: (theme) =>
+              theme.palette.mode === "dark"
+                ? "rgba(255,255,255,0.06)"
+                : "rgba(0,0,0,0.06)",
           }}
         >
-          <SentimentDissatisfied sx={{ fontSize: 40, color: "text.secondary" }} />
+          {getIcon()}
         </Box>
-        <Typography variant="h6" color="text.secondary" fontWeight={600} sx={{ fontSize: "1rem" }}>
+        <Typography variant="h6" color="text.primary" fontWeight={700} sx={{ fontSize: "1.05rem" }}>
           {message}
         </Typography>
+        {type === "network" && (
+          <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 320, fontSize: "0.825rem" }}>
+            Please check your internet connection and try reloading the page.
+          </Typography>
+        )}
         {onRetry && (
           <Button
             variant="contained"
@@ -60,3 +100,4 @@ export default function ErrorState({ message = "Something went wrong", onRetry }
     </motion.div>
   );
 }
+

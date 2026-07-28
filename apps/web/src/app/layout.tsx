@@ -59,6 +59,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body suppressHydrationWarning>
+        <a id="skip-to-content" href="#main-content">
+          Skip to content
+        </a>
         <ThemeProvider>
           <QueryProvider>
             <AnalyticsTracker />
@@ -78,7 +81,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 },
               }}
             />
-            {children}
+            <main id="main-content">
+              {children}
+            </main>
           </QueryProvider>
         </ThemeProvider>
       </body>

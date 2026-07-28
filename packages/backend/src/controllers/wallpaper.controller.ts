@@ -23,6 +23,24 @@ interface WallpaperParams {
 
 interface SimilarQuery {
   page?: string;
+  limit?: string;
+}
+
+export async function getSimilar(
+  request: FastifyRequest<{ Params: WallpaperParams; Querystring: SimilarQuery }>,
+  reply: FastifyReply
+) {
+  const { id } = request.params;
+  const { page = "1", limit = "24" } = request.query;
+  const pageNum = Math.max(1, parseInt(page, 10) || 1);
+  const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10) || 24));
+
+  try {
+    return await getSimilarWallpapers(id, pageNum, limitNum);
+  } catch (error) {
+    request.log.error(error);
+    return reply.status(502).send({ error: "Failed to fetch similar wallpapers" });
+  }
 }
 
 interface SearchQuery {
@@ -109,22 +127,6 @@ export async function getWallpaper(
   } catch (error) {
     request.log.error(error);
     return reply.status(404).send({ error: "Wallpaper not found" });
-  }
-}
-
-export async function getSimilar(
-  request: FastifyRequest<{ Params: WallpaperParams; Querystring: SimilarQuery }>,
-  reply: FastifyReply
-) {
-  const { id } = request.params;
-  const { page = "1" } = request.query;
-  const pageNum = Math.max(1, parseInt(page, 10) || 1);
-
-  try {
-    return await getSimilarWallpapers(id, pageNum);
-  } catch (error) {
-    request.log.error(error);
-    return reply.status(502).send({ error: "Failed to fetch similar wallpapers" });
   }
 }
 

@@ -54,7 +54,7 @@ export function useWallpaper(id: string) {
 export function useSimilarWallpapers(id: string) {
   return useInfiniteQuery({
     queryKey: ["similar", id],
-    queryFn: ({ pageParam = 1 }) => fetchSimilarWallpapers(id, pageParam, 16),
+    queryFn: ({ pageParam = 1 }) => fetchSimilarWallpapers(id, pageParam, 24),
     getNextPageParam: (lastPage) => {
       if (lastPage.page >= lastPage.lastPage) return undefined;
       return lastPage.page + 1;

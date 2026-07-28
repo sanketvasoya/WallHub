@@ -3,7 +3,6 @@
 import {
   Box,
   Typography,
-  IconButton,
   List,
   ListItem,
   ListItemText,
@@ -11,28 +10,43 @@ import {
   MenuItem,
   Divider,
   FormControl,
+  Button,
 } from "@mui/material";
-import { DarkMode, LightMode, Brightness6 } from "@mui/icons-material";
-import { useRouter } from "next/navigation";
+import { DarkMode, LightMode, Brightness6, Settings as SettingsIcon, DeleteOutline } from "@mui/icons-material";
 import Header from "@/components/layout/Header";
 import BottomNav from "@/components/layout/BottomNav";
-import { useSettingsStore } from "@/lib/stores";
+import PageHeader from "@/components/ui/PageHeader";
+import { useSettingsStore, useSearchHistoryStore, useDownloadHistoryStore } from "@/lib/stores";
+import toast from "react-hot-toast";
 
 function SettingsContent() {
-  const router = useRouter();
   const theme = useSettingsStore((s) => s.theme);
   const setTheme = useSettingsStore((s) => s.setTheme);
+  const gridDensity = useSettingsStore((s) => s.gridDensity);
+  const setGridDensity = useSettingsStore((s) => s.setGridDensity);
+  const clearSearchHistory = useSearchHistoryStore((s) => s.clearHistory);
+  const clearDownloadHistory = useDownloadHistoryStore((s) => s.clearHistory);
+
+  const handleClearSearch = () => {
+    clearSearchHistory();
+    toast.success("Search history cleared");
+  };
+
+  const handleClearDownloads = () => {
+    clearDownloadHistory();
+    toast.success("Download history cleared");
+  };
 
   return (
     <Box sx={{ pb: { xs: 10, sm: 4 } }}>
       <Header />
 
       <Box sx={{ px: { xs: 2, sm: 3 }, pt: 2 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
-          <Typography variant="h5" fontWeight={700} sx={{ fontSize: { xs: "1.2rem", sm: "1.5rem" } }}>
-            Settings
-          </Typography>
-        </Box>
+        <PageHeader
+          title="Settings"
+          subtitle="Customize your app preferences and manage local storage"
+          icon={<SettingsIcon sx={{ color: "primary.main" }} />}
+        />
 
         <Typography
           variant="caption"
@@ -64,7 +78,7 @@ function SettingsContent() {
           <ListItem>
             <ListItemText
               primary="Theme"
-              secondary="Choose your preferred theme"
+              secondary="Choose your preferred color theme"
               primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }}
               secondaryTypographyProps={{ fontSize: "0.78rem" }}
             />
@@ -96,6 +110,97 @@ function SettingsContent() {
                 </MenuItem>
               </Select>
             </FormControl>
+          </ListItem>
+          <Divider sx={{ opacity: 0.06 }} />
+          <ListItem>
+            <ListItemText
+              primary="Grid Density"
+              secondary="Control wallpaper grid column count"
+              primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }}
+              secondaryTypographyProps={{ fontSize: "0.78rem" }}
+            />
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <Select
+                value={gridDensity}
+                onChange={(e) => setGridDensity(e.target.value as "compact" | "comfortable" | "spacious")}
+                sx={{
+                  borderRadius: 2,
+                  fontSize: "0.85rem",
+                  fontWeight: 500,
+                  "& .MuiSelect-select": { py: 1 },
+                }}
+              >
+                <MenuItem value="compact">Compact</MenuItem>
+                <MenuItem value="comfortable">Comfortable</MenuItem>
+                <MenuItem value="spacious">Spacious</MenuItem>
+              </Select>
+            </FormControl>
+          </ListItem>
+        </List>
+
+        <Typography
+          variant="caption"
+          color="primary"
+          fontWeight={700}
+          sx={{
+            mb: 1,
+            ml: 1,
+            display: "block",
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            fontSize: "0.65rem",
+          }}
+        >
+          Data & Privacy
+        </Typography>
+        <List
+          sx={{
+            bgcolor: (theme) =>
+              theme.palette.mode === "dark"
+                ? "rgba(255,255,255,0.03)"
+                : "rgba(0,0,0,0.02)",
+            borderRadius: 3,
+            border: "1px solid",
+            borderColor: "divider",
+            mb: 3,
+          }}
+        >
+          <ListItem>
+            <ListItemText
+              primary="Clear Search History"
+              secondary="Remove all saved search suggestions"
+              primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }}
+              secondaryTypographyProps={{ fontSize: "0.78rem" }}
+            />
+            <Button
+              size="small"
+              variant="outlined"
+              color="error"
+              onClick={handleClearSearch}
+              startIcon={<DeleteOutline sx={{ fontSize: 16 }} />}
+              sx={{ borderRadius: 2.5, textTransform: "none", fontWeight: 600 }}
+            >
+              Clear
+            </Button>
+          </ListItem>
+          <Divider sx={{ opacity: 0.06 }} />
+          <ListItem>
+            <ListItemText
+              primary="Clear Download History"
+              secondary="Remove download history entries"
+              primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }}
+              secondaryTypographyProps={{ fontSize: "0.78rem" }}
+            />
+            <Button
+              size="small"
+              variant="outlined"
+              color="error"
+              onClick={handleClearDownloads}
+              startIcon={<DeleteOutline sx={{ fontSize: 16 }} />}
+              sx={{ borderRadius: 2.5, textTransform: "none", fontWeight: 600 }}
+            >
+              Clear
+            </Button>
           </ListItem>
         </List>
 
@@ -129,7 +234,7 @@ function SettingsContent() {
           <ListItem>
             <ListItemText
               primary="WallHub"
-              secondary="Version 1.0.0"
+              secondary="Version 2.0.0 (Production Polish)"
               primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }}
               secondaryTypographyProps={{ fontSize: "0.78rem" }}
             />
@@ -137,8 +242,8 @@ function SettingsContent() {
           <Divider sx={{ opacity: 0.06 }} />
           <ListItem>
             <ListItemText
-              primary="Premium Wallpaper Platform"
-              secondary="Built with Next.js, MUI, and Fastify"
+              primary="Platform Stack"
+              secondary="Next.js 15, MUI v7, TanStack Query & Fastify"
               primaryTypographyProps={{ fontWeight: 500, fontSize: "0.9rem" }}
               secondaryTypographyProps={{ fontSize: "0.78rem" }}
             />
@@ -154,3 +259,4 @@ function SettingsContent() {
 export default function SettingsPage() {
   return <SettingsContent />;
 }
+

@@ -59,7 +59,7 @@ export async function fetchWallpaper(id: string): Promise<Wallpaper> {
 export async function fetchSimilarWallpapers(
   id: string,
   page: number = 1,
-  limit: number = 16
+  limit: number = 24
 ): Promise<WallpapersResponse> {
   const { data } = await api.get<WallpapersResponse>(`/wallpaper/${id}/similar`, {
     params: { page, limit },

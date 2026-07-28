@@ -88,9 +88,10 @@ export async function getWallpaperById(id: string): Promise<Wallpaper> {
 
 export async function getSimilarWallpapers(
   id: string,
-  page: number = 1
+  page: number = 1,
+  limit: number = 24
 ): Promise<{ wallpapers: Wallpaper[]; page: number; totalResults: number; lastPage: number }> {
-  const cacheKey = `similar:${id}:${page}`;
+  const cacheKey = `similar:${id}:${page}:${limit}`;
 
   const cached = await cacheGet<{ wallpapers: Wallpaper[]; page: number; totalResults: number; lastPage: number }>(cacheKey);
   if (cached) return cached;
@@ -106,7 +107,7 @@ export async function getSimilarWallpapers(
       .filter((w) => w.id !== id);
     let wallpapers = validateWallpapers(candidates);
 
-    if (wallpapers.length < 16) {
+    if (wallpapers.length < limit) {
       const categoryQuery = wallpaper.subreddit.toLowerCase();
       const categoryResult = await searchWallhaven(categoryQuery, categories, "relevance", page);
       const seen = new Set(candidates.map((w) => w.id));
@@ -117,7 +118,7 @@ export async function getSimilarWallpapers(
     }
 
     const response = {
-      wallpapers: wallpapers.slice(0, 16),
+      wallpapers: wallpapers.slice(0, limit),
       page,
       totalResults: tagResult.meta.total,
       lastPage: tagResult.meta.last_page,

@@ -13,4 +13,4 @@ export interface Category {
 }
 
 export type ThemeMode = "light" | "dark" | "system";
-export type SortOption = "hot" | "new" | "top";
+export type SortOption = "hot" | "new" | "top" | "relevance";

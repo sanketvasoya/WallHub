@@ -96,6 +96,7 @@ export default function Header() {
         <Toolbar sx={{ gap: 1, px: { xs: 1.5, sm: 3 }, minHeight: { xs: 56, sm: 64 } }}>
           <IconButton
             edge="start"
+            aria-label="Open navigation menu"
             onClick={() => setDrawerOpen(true)}
             sx={{
               mr: 0.5,
@@ -137,11 +138,22 @@ export default function Header() {
           </NextLink>
 
           <Box sx={{ flex: 1, display: "flex", justifyContent: "center", mx: 2 }}>
-            {!isMobile && <SearchBar />}
+            {!isMobile ? (
+              <SearchBar />
+            ) : (
+              <IconButton
+                aria-label="Search wallpapers"
+                onClick={() => router.push("/search")}
+                sx={{ ml: "auto", color: "text.secondary" }}
+              >
+                <SearchIcon sx={{ fontSize: 22 }} />
+              </IconButton>
+            )}
           </Box>
 
           <Tooltip title={`Theme: ${themeOptions[currentThemeIdx]?.label}`}>
             <IconButton
+              aria-label={`Toggle theme, current theme: ${themeOptions[currentThemeIdx]?.label}`}
               onClick={cycleTheme}
               sx={{
                 color: "text.secondary",

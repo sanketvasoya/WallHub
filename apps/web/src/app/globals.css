@@ -1,3 +1,18 @@
+:root {
+  --color-primary: #7c4dff;
+  --color-secondary: #00e5ff;
+  --color-accent: #ff6b9d;
+  --color-bg-dark: #05050a;
+  --color-bg-light: #f8f8fc;
+  --font-sans: var(--font-plus-jakarta), "Roboto", sans-serif;
+  --font-display: var(--font-space-grotesk), sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --ease-spring: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
 *,
 *::before,
 *::after {
@@ -16,7 +31,7 @@ html {
 body {
   min-height: 100vh;
   overflow-x: hidden;
-  font-family: var(--font-plus-jakarta), "Roboto", sans-serif;
+  font-family: var(--font-sans);
 }
 
 a {
@@ -32,6 +47,24 @@ img {
 ::selection {
   background: rgba(124, 77, 255, 0.3);
   color: inherit;
+}
+
+#skip-to-content {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  z-index: 10000;
+  padding: 8px 16px;
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: top 0.2s ease;
+}
+
+#skip-to-content:focus {
+  top: 8px;
 }
 
 ::-webkit-scrollbar {
@@ -124,6 +157,51 @@ img {
   min-width: 0;
 }
 
+/* Masonry grid variant using CSS column-count */
+.masonry-grid {
+  column-count: 4;
+  column-gap: 16px;
+  padding: 0 20px;
+}
+
+.masonry-grid-item {
+  break-inside: avoid;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 1200px) {
+  .masonry-grid {
+    column-count: 3;
+    column-gap: 12px;
+    padding: 0 16px;
+  }
+  .masonry-grid-item {
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 900px) {
+  .masonry-grid {
+    column-count: 2;
+    column-gap: 12px;
+    padding: 0 12px;
+  }
+  .masonry-grid-item {
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .masonry-grid {
+    column-count: 2;
+    column-gap: 8px;
+    padding: 0 8px;
+  }
+  .masonry-grid-item {
+    margin-bottom: 8px;
+  }
+}
+
 .glass-panel {
   backdrop-filter: blur(24px) saturate(1.4);
   -webkit-backdrop-filter: blur(24px) saturate(1.4);
@@ -154,3 +232,15 @@ img {
   mask-composite: exclude;
   pointer-events: none;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

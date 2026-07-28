@@ -107,9 +107,6 @@ importers:
       '@fastify/rate-limit':
         specifier: ^10.2.1
         version: 10.3.0
-      '@wallhub/types':
-        specifier: workspace:*
-        version: link:../types
       fastify:
         specifier: ^5.3.3
         version: 5.10.0
