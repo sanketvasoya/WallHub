@@ -3,11 +3,13 @@ import {
   HOMEPAGE_COLLECTIONS,
   HERO_REQUIREMENTS,
   HOMEPAGE_BLOCKED_KEYWORDS,
+  HERO_LIMIT,
+  HOMEPAGE_CACHE_TTL,
 } from "../config/homepageCollections.js";
 import {
   SCORE_BONUSES,
   SCORE_PENALTIES,
-  MINIMUM_SCORE,
+  HERO_MINIMUM_SCORE,
 } from "../config/homepageWeights.js";
 import {
   searchWallhaven,
@@ -18,7 +20,6 @@ import { validateWallpapers } from "./validation.service.js";
 import { logInfo, logError } from "../utils/logger.js";
 
 const HOMEPAGE_CACHE_KEY = "homepage:curated";
-const HOMEPAGE_CACHE_TTL = 1800;
 
 export interface HomepageResult {
   hero: Wallpaper[];
@@ -81,8 +82,7 @@ function isHeroQuality(wallpaper: Wallpaper): boolean {
   if (wallpaper.width < HERO_REQUIREMENTS.minWidth) return false;
   if (wallpaper.height < HERO_REQUIREMENTS.minHeight) return false;
 
-  const orientation = wallpaper.orientation;
-  if (orientation !== "landscape") return false;
+  if (wallpaper.orientation !== "landscape") return false;
 
   if (wallpaper.upvotes < HERO_REQUIREMENTS.minFavorites) return false;
   if (wallpaper.views < HERO_REQUIREMENTS.minViews) return false;
@@ -151,7 +151,6 @@ export async function generateHomepage(): Promise<HomepageResult> {
 
     const scored = collectionWallpapers
       .map((w) => ({ wallpaper: w, score: scoreWallpaper(w) }))
-      .filter((item) => item.score >= MINIMUM_SCORE)
       .sort((a, b) => b.score - a.score)
       .slice(0, 20)
       .map((item) => item.wallpaper);
@@ -176,11 +175,12 @@ export async function generateHomepage(): Promise<HomepageResult> {
 
   const scoredWallpapers = uniqueWallpapers
     .map((w) => ({ wallpaper: w, score: scoreWallpaper(w) }))
+    .filter((item) => item.score >= HERO_MINIMUM_SCORE)
     .sort((a, b) => b.score - a.score);
 
   const hero = scoredWallpapers
     .filter((item) => isHeroQuality(item.wallpaper))
-    .slice(0, 8)
+    .slice(0, HERO_LIMIT)
     .map((item) => item.wallpaper);
 
   const result: HomepageResult = {

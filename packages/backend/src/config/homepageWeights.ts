@@ -48,11 +48,20 @@ export const SCORE_BONUSES: ScoreRule[] = [
   { type: "views", match: 50000, score: 6 },
   { type: "views", match: 10000, score: 4 },
   { type: "views", match: 1000, score: 2 },
-  { type: "color", match: "000000", score: 3 },
-  { type: "color", match: "FFFFFF", score: 2 },
-  { type: "color", match: "1a1a2e", score: 3 },
-  { type: "color", match: "0f3460", score: 3 },
-  { type: "color", match: "16213e", score: 3 },
+  { type: "color", match: "000000", score: 8 },
+  { type: "color", match: "1a1a1a", score: 8 },
+  { type: "color", match: "0d0d0d", score: 8 },
+  { type: "color", match: "000033", score: 5 },
+  { type: "color", match: "000066", score: 5 },
+  { type: "color", match: "0066CC", score: 5 },
+  { type: "color", match: "0f3460", score: 5 },
+  { type: "color", match: "16213e", score: 5 },
+  { type: "color", match: "FFFFFF", score: 5 },
+  { type: "color", match: "F5F5F5", score: 5 },
+  { type: "color", match: "E0E0E0", score: 4 },
+  { type: "color", match: "009933", score: 3 },
+  { type: "color", match: "336633", score: 3 },
+  { type: "color", match: "1a1a2e", score: 5 },
 ];
 
 export const SCORE_PENALTIES: ScoreRule[] = [
@@ -72,10 +81,6 @@ export const SCORE_PENALTIES: ScoreRule[] = [
   { type: "tag", match: "nude", score: -Infinity },
   { type: "tag", match: "sexy", score: -Infinity },
   { type: "tag", match: "bikini", score: -Infinity },
-  { type: "tag", match: "sunset", score: -2 },
-  { type: "tag", match: "ocean", score: -1 },
-  { type: "tag", match: "city", score: -1 },
 ];
 
-export const MINIMUM_SCORE = 0;
 export const HERO_MINIMUM_SCORE = 25;
