@@ -31,7 +31,7 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.75.5
         version: 5.101.2(react@19.2.7)
-      '@wallhub/types':
+      '@wallection/types':
         specifier: workspace:*
         version: link:../../packages/types
       axios:
