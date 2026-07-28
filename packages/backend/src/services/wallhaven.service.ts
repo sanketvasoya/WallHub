@@ -53,7 +53,7 @@ export async function searchWallhaven(
   }
 
   const response = await fetch(url.toString(), {
-    headers: { "User-Agent": "WallHub/1.0" },
+    headers: { "User-Agent": "Wallection/1.0" },
   });
 
   if (!response.ok) {
@@ -77,7 +77,7 @@ export async function getWallhavenWallpaper(id: string): Promise<WallhavenImage>
   }
 
   const response = await fetch(url.toString(), {
-    headers: { "User-Agent": "WallHub/1.0" },
+    headers: { "User-Agent": "Wallection/1.0" },
   });
 
   if (!response.ok) {

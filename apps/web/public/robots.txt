@@ -3,4 +3,4 @@ Allow: /
 Disallow: /api/
 Disallow: /admin/
 
-Sitemap: https://wallhub.app/sitemap.xml
+Sitemap: https://wallection.app/sitemap.xml

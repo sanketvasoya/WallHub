@@ -16,7 +16,7 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: "cd ../.. && pnpm --filter @wallhub/backend dev",
+      command: "cd ../.. && pnpm --filter @wallection/backend dev",
       port: BACKEND_PORT,
       reuseExistingServer: true,
       timeout: 30000,

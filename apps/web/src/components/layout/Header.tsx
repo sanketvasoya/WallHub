@@ -141,7 +141,7 @@ export default function Header() {
                 fontSize: "1.15rem",
               }}
             >
-              WallHub
+              Wallection
             </Typography>
           </NextLink>
 
@@ -251,7 +251,7 @@ export default function Header() {
             <Whatshot sx={{ color: "white", fontSize: 22 }} />
           </Box>
           <Typography variant="h6" fontWeight={800}>
-            WallHub
+            Wallection
           </Typography>
         </Box>
         <Divider sx={{ opacity: 0.06 }} />

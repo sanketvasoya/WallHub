@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Home Page", () => {
   test("loads and displays hero section", async ({ page }) => {
     await page.goto("/", { waitUntil: "networkidle" });
-    await expect(page).toHaveTitle(/WallHub/);
+    await expect(page).toHaveTitle(/Wallection/);
     await expect(page.getByText("Discover Wallpapers")).toBeVisible({ timeout: 15000 });
   });
 

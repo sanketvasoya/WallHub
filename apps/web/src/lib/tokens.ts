@@ -1,5 +1,5 @@
 /**
- * WallHub Design Tokens
+ * Wallection Design Tokens
  * Single source of truth for all design values.
  */
 

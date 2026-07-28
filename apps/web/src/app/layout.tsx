@@ -23,23 +23,23 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   title: {
-    default: "WallHub - Premium Wallpapers",
-    template: "%s | WallHub",
+    default: "Wallection - Premium Wallpapers",
+    template: "%s | Wallection",
   },
   description:
     "Discover and download stunning high-quality wallpapers for your desktop and mobile devices.",
   keywords: ["wallpapers", "4K", "HD", "backgrounds", "desktop", "mobile", "AMOLED", "nature", "space"],
-  authors: [{ name: "WallHub" }],
+  authors: [{ name: "Wallection" }],
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "WallHub",
-    title: "WallHub - Premium Wallpapers",
+    siteName: "Wallection",
+    title: "Wallection - Premium Wallpapers",
     description: "Discover and download stunning high-quality wallpapers.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "WallHub - Premium Wallpapers",
+    title: "Wallection - Premium Wallpapers",
     description: "Discover and download stunning high-quality wallpapers.",
   },
   manifest: "/manifest.json",

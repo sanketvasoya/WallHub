@@ -1,13 +1,13 @@
 {
-  "name": "wallhub",
+  "name": "wallection",
   "version": "1.0.0",
   "private": true,
   "description": "Premium wallpaper PWA platform",
   "scripts": {
-    "dev": "pnpm --filter @wallhub/web dev",
-    "dev:backend": "pnpm --filter @wallhub/backend dev",
+    "dev": "pnpm --filter @wallection/web dev",
+    "dev:backend": "pnpm --filter @wallection/backend dev",
     "dev:all": "pnpm run --parallel dev dev:backend",
-    "build": "pnpm --filter @wallhub/web build",
+    "build": "pnpm --filter @wallection/web build",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck"
   },

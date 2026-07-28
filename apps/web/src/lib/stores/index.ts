@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { get, set, del, keys } from "idb-keyval";
 import type { ThemeMode, SortOption, OrientationPreference } from "@/types";
-import type { DownloadHistoryEntry } from "@wallhub/types";
+import type { DownloadHistoryEntry } from "@wallection/types";
 
 type GridDensity = "compact" | "comfortable" | "spacious";
 
@@ -25,7 +25,7 @@ export const useSettingsStore = create<SettingsState>()(
       orientation: "all" as OrientationPreference,
       setOrientation: (orientation) => set({ orientation }),
     }),
-    { name: "wallhub-settings" }
+    { name: "wallection-settings" }
   )
 );
 
@@ -61,7 +61,7 @@ export const useFavoritesStore = create<FavoritesState>()(
         }
       },
     }),
-    { name: "wallhub-favorites" }
+    { name: "wallection-favorites" }
   )
 );
 
@@ -88,11 +88,11 @@ export const useSearchHistoryStore = create<SearchHistoryState>()(
         })),
       clearHistory: () => set({ history: [] }),
     }),
-    { name: "wallhub-search-history" }
+    { name: "wallection-search-history" }
   )
 );
 
-const DOWNLOAD_HISTORY_KEY = "wallhub-download-history";
+const DOWNLOAD_HISTORY_KEY = "wallection-download-history";
 const MAX_DOWNLOAD_HISTORY = 50;
 
 async function loadDownloadHistory(): Promise<DownloadHistoryEntry[]> {
@@ -169,6 +169,6 @@ export const useSortPersistenceStore = create<SortPersistenceState>()(
         })),
       getSort: (categorySlug) => get().sorts[categorySlug] || "hot",
     }),
-    { name: "wallhub-sorts" }
+    { name: "wallection-sorts" }
   )
 );

@@ -1,6 +1,6 @@
 {
-  "name": "WallHub",
-  "short_name": "WallHub",
+  "name": "Wallection",
+  "short_name": "Wallection",
   "description": "Premium wallpaper platform with stunning 4K wallpapers",
   "start_url": "/",
   "display": "standalone",

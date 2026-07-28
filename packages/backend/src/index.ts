@@ -49,7 +49,7 @@ app.addHook("onRequest", requestId);
 
 app.get("/", async () => {
   return {
-    name: "WallHub API",
+    name: "Wallection API",
     version: "1.0.0",
     status: "running",
     timestamp: new Date().toISOString(),
@@ -87,7 +87,7 @@ process.on("SIGINT", shutdown);
 
 try {
   await app.listen({ port: env.BACKEND_PORT, host: env.BACKEND_HOST });
-  app.log.info(`WallHub backend running on http://${env.BACKEND_HOST}:${env.BACKEND_PORT}`);
+  app.log.info(`Wallection backend running on http://${env.BACKEND_HOST}:${env.BACKEND_PORT}`);
 } catch (err) {
   app.log.error(err);
   process.exit(1);

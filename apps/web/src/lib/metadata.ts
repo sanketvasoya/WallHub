@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-const SITE_NAME = "WallHub";
+const SITE_NAME = "Wallection";
 const DEFAULT_DESCRIPTION = "Discover and download stunning high-quality wallpapers for your desktop and mobile devices.";
 
 export function generateWallpaperMetadata(wallpaper: {

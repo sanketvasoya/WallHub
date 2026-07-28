@@ -1,4 +1,4 @@
-const CACHE_NAME = "wallhub-v1";
+const CACHE_NAME = "wallection-v1";
 const STATIC_ASSETS = ["/", "/manifest.json", "/favicon.ico"];
 
 self.addEventListener("install", (event) => {

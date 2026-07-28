@@ -1,4 +1,4 @@
-# WallHub
+# Wallection
 
 Premium wallpaper PWA platform built with Next.js 15, MUI v7, and Fastify.
 
@@ -29,7 +29,7 @@ Copy the root `.env.example` to `.env` and fill in Reddit API credentials:
 ```bash
 REDDIT_CLIENT_ID=your_client_id
 REDDIT_CLIENT_SECRET=your_client_secret
-REDDIT_USER_AGENT=WallHub/1.0
+REDDIT_USER_AGENT=Wallection/1.0
 REDIS_URL=redis://localhost:6379
 ```
 
@@ -61,7 +61,7 @@ pnpm build
 ## Project Structure
 
 ```
-WallHub/
+Wallection/
   apps/
     web/                  # Next.js frontend
       src/
@@ -126,8 +126,8 @@ vercel deploy
 
 ```bash
 cd packages/backend
-docker build -t wallhub-backend .
-docker run -p 3001:3001 wallhub-backend
+docker build -t wallection-backend .
+docker run -p 3001:3001 wallection-backend
 ```
 
 ### Environment Variables for Production

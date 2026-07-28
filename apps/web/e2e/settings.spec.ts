@@ -5,7 +5,7 @@ test.describe("Settings Page", () => {
     await page.goto("/settings", { waitUntil: "networkidle" });
 
     const bodyText = await page.locator("body").innerText();
-    expect(bodyText).toContain("WallHub");
+    expect(bodyText).toContain("Wallection");
     expect(bodyText).toContain("Version");
   });
 

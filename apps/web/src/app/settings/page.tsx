@@ -272,7 +272,7 @@ function SettingsContent() {
         >
           <ListItem>
             <ListItemText
-              primary="WallHub"
+              primary="Wallection"
               secondary="Version 2.0.0 (Production Polish)"
               primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }}
               secondaryTypographyProps={{ fontSize: "0.78rem" }}
