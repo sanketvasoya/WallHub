@@ -2,6 +2,7 @@ import { z } from "zod";
 
 const envSchema = z.object({
   WALLHAVEN_API_KEY: z.string().optional(),
+  WALLPAPERSCOM_API_KEY: z.string().optional(),
   BACKEND_PORT: z.coerce.number().default(3001),
   BACKEND_HOST: z.string().default("0.0.0.0"),
   REDIS_URL: z.string().default("redis://localhost:6379"),

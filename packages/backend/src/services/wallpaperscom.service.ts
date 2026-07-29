@@ -3,6 +3,7 @@ import { cacheGet, cacheSet } from "./cache.service.js";
 import { CACHE_TTL } from "../config/cache.js";
 import { logInfo, logError } from "../utils/logger.js";
 import { PROVIDER_LABELS } from "../config/providers.js";
+import { getEnv } from "../config/env.js";
 
 interface WpcomImageObject {
   "@id": string;
@@ -26,6 +27,15 @@ interface WpcomCollectionPageLD {
 
 const LISTING_URL = "https://wallpapers.com/discover-wallpapers";
 const SEARCH_URL = "https://wallpapers.com/discover-wallpapers";
+
+function buildHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { "User-Agent": "Wallection/1.0" };
+  const env = getEnv();
+  if (env.WALLPAPERSCOM_API_KEY) {
+    headers["X-API-Key"] = env.WALLPAPERSCOM_API_KEY;
+  }
+  return headers;
+}
 
 function extractSlug(wallpaperUrl: string): string {
   const match = wallpaperUrl.match(/\/([^/]+)\.html$/);
@@ -154,7 +164,7 @@ export async function fetchWpcomListing(
       : `https://wallpapers.com/discover-wallpapers${page > 1 ? `?p=${page}` : ""}`;
 
     const response = await fetch(url, {
-      headers: { "User-Agent": "Wallection/1.0" },
+      headers: buildHeaders(),
     });
 
     if (!response.ok) {
@@ -198,7 +208,7 @@ export async function fetchWpcomWallpaper(slug: string): Promise<Wallpaper | nul
   try {
     const url = `https://wallpapers.com/wallpapers/${slug}.html`;
     const response = await fetch(url, {
-      headers: { "User-Agent": "Wallection/1.0" },
+      headers: buildHeaders(),
     });
 
     if (!response.ok) {
@@ -234,7 +244,7 @@ export async function searchWpcomWallpapers(
   try {
     const url = `https://wallpapers.com/search?q=${encodeURIComponent(query)}&p=${page}`;
     const response = await fetch(url, {
-      headers: { "User-Agent": "Wallection/1.0" },
+      headers: buildHeaders(),
     });
 
     if (!response.ok) {
