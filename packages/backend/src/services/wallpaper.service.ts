@@ -43,7 +43,7 @@ export async function getWallpapersByCategory(
       wallpapers: result.wallpapers,
       page: result.page,
       totalResults: result.totalResults,
-      lastPage: Math.ceil(result.totalResults / 24),
+      lastPage: result.wallpapers.length === 0 ? page : 9999,
     };
   }
 
@@ -134,11 +134,12 @@ export async function getSimilarWallpapers(
     const wallpaper = await getWallpaperById(id, "wallpaperscom");
     const searchTerms = [wallpaper.title, ...wallpaper.tags.slice(0, 5)].filter(Boolean).join(" ");
     const result = await searchWpcomWallpapers(searchTerms, page);
+    const empty = result.wallpapers.length === 0;
     return {
       wallpapers: result.wallpapers.filter(w => w.id !== id),
       page: result.page,
       totalResults: result.totalResults,
-      lastPage: Math.ceil(result.totalResults / 24),
+      lastPage: empty ? page : 9999,
     };
   }
 
