@@ -1,5 +1,7 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
 import { getCategoryBySlug, CATEGORIES } from "../config/categories.js";
+import type { Provider } from "../config/providers.js";
+import { isValidProvider } from "../config/providers.js";
 import {
   getWallpapersByCategory,
   getWallpaperById,
@@ -13,6 +15,7 @@ interface WallpaperQuery {
   page?: string;
   ratios?: string;
   atleast?: string;
+  provider?: string;
 }
 
 interface BatchQuery {
@@ -23,24 +26,30 @@ interface WallpaperParams {
   id: string;
 }
 
+interface WallpaperDetailQuery {
+  provider?: string;
+}
+
 interface SimilarQuery {
   page?: string;
   limit?: string;
   ratios?: string;
   atleast?: string;
+  provider?: string;
 }
 
 interface FeedQuery {
   page?: string;
   ratios?: string;
   atleast?: string;
+  provider?: string;
 }
 
 export async function getFeed(
   request: FastifyRequest<{ Querystring: FeedQuery }>,
   reply: FastifyReply
 ) {
-  const { page = "1", ratios, atleast } = request.query;
+  const { page = "1", ratios, atleast, provider } = request.query;
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
 
   try {
@@ -52,7 +61,8 @@ export async function getFeed(
       [],
       "111",
       ratios,
-      atleast
+      atleast,
+      provider
     );
   } catch (error: any) {
     request.log.error(error);
@@ -69,12 +79,12 @@ export async function getSimilar(
   reply: FastifyReply
 ) {
   const { id } = request.params;
-  const { page = "1", limit = "24", ratios, atleast } = request.query;
+  const { page = "1", limit = "24", ratios, atleast, provider } = request.query;
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
   const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10) || 24));
 
   try {
-    return await getSimilarWallpapers(id, pageNum, limitNum, ratios, atleast);
+    return await getSimilarWallpapers(id, pageNum, limitNum, ratios, atleast, provider);
   } catch (error) {
     request.log.error(error);
     return reply.status(502).send({ error: "Failed to fetch similar wallpapers" });
@@ -87,6 +97,7 @@ interface SearchQuery {
   page?: string;
   ratios?: string;
   atleast?: string;
+  provider?: string;
 }
 
 export async function getWallpapers(
@@ -99,6 +110,7 @@ export async function getWallpapers(
     page = "1",
     ratios,
     atleast,
+    provider,
   } = request.query;
 
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
@@ -116,7 +128,8 @@ export async function getWallpapers(
       cat.wallhavenTags,
       cat.wallhavenCategories,
       ratios,
-      atleast
+      atleast,
+      provider
     );
   } catch (error: any) {
     request.log.error(error);
@@ -161,13 +174,14 @@ export async function getWallpapersBatch(
 }
 
 export async function getWallpaper(
-  request: FastifyRequest<{ Params: WallpaperParams }>,
+  request: FastifyRequest<{ Params: WallpaperParams; Querystring: WallpaperDetailQuery }>,
   reply: FastifyReply
 ) {
   const { id } = request.params;
+  const { provider } = request.query;
 
   try {
-    return await getWallpaperById(id);
+    return await getWallpaperById(id, provider);
   } catch (error) {
     request.log.error(error);
     return reply.status(404).send({ error: "Wallpaper not found" });
@@ -178,7 +192,7 @@ export async function search(
   request: FastifyRequest<{ Querystring: SearchQuery }>,
   reply: FastifyReply
 ) {
-  const { q, sort = "relevance", page = "1", ratios, atleast } = request.query;
+  const { q, sort = "relevance", page = "1", ratios, atleast, provider } = request.query;
 
   if (!q || q.trim().length === 0) {
     return reply.status(400).send({ error: "Search query is required" });
@@ -187,7 +201,7 @@ export async function search(
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
 
   try {
-    return await searchWallpapers(q.trim(), sort, pageNum, ratios, atleast);
+    return await searchWallpapers(q.trim(), sort, pageNum, ratios, atleast, provider);
   } catch (error: any) {
     request.log.error(error);
     if (error?.statusCode === 429) {

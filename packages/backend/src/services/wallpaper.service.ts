@@ -1,9 +1,16 @@
 import type { Wallpaper } from "../types/index.js";
+import type { Provider } from "../config/providers.js";
+import { isValidProvider } from "../config/providers.js";
 import {
   searchWallhaven,
   getWallhavenWallpaper,
   transformWallhavenImage,
 } from "./wallhaven.service.js";
+import {
+  fetchWpcomListing,
+  fetchWpcomWallpaper,
+  searchWpcomWallpapers,
+} from "./wallpaperscom.service.js";
 import { cacheGet, cacheSet } from "./cache.service.js";
 import { validateWallpapers, validateWallpaper } from "./validation.service.js";
 import { CACHE_TTL } from "../config/cache.js";
@@ -22,8 +29,19 @@ export async function getWallpapersByCategory(
   wallhavenTags: string[],
   wallhavenCategories: string,
   ratios?: string,
-  atleast?: string
+  atleast?: string,
+  provider?: string
 ): Promise<{ wallpapers: Wallpaper[]; page: number; totalResults: number; lastPage: number }> {
+  if (provider === "wallpaperscom") {
+    const result = await fetchWpcomListing(page);
+    return {
+      wallpapers: result.wallpapers,
+      page: result.page,
+      totalResults: result.totalResults,
+      lastPage: Math.ceil(result.totalResults / 24),
+    };
+  }
+
   const cacheKey = `wallpapers:${category}:${sort}:${page}:${ratios || "all"}`;
 
   const cached = await cacheGet<{ wallpapers: Wallpaper[]; page: number; totalResults: number; lastPage: number }>(cacheKey);
@@ -66,7 +84,14 @@ export async function getWallpapersByCategory(
   }
 }
 
-export async function getWallpaperById(id: string): Promise<Wallpaper> {
+export async function getWallpaperById(id: string, provider?: string): Promise<Wallpaper> {
+  if (provider === "wallpaperscom") {
+    const slug = id.replace(/^wpcom-/, "");
+    const wallpaper = await fetchWpcomWallpaper(slug);
+    if (!wallpaper) throw new Error("Wallpaper not found on Wallpapers.com");
+    return wallpaper;
+  }
+
   const cacheKey = `wallpaper:${id}`;
 
   const cached = await cacheGet<Wallpaper>(cacheKey);
@@ -95,8 +120,19 @@ export async function getSimilarWallpapers(
   page: number = 1,
   limit: number = 24,
   ratios?: string,
-  atleast?: string
+  atleast?: string,
+  provider?: string
 ): Promise<{ wallpapers: Wallpaper[]; page: number; totalResults: number; lastPage: number }> {
+  if (provider === "wallpaperscom") {
+    const result = await fetchWpcomListing(page);
+    return {
+      wallpapers: result.wallpapers.filter(w => w.id !== id),
+      page: result.page,
+      totalResults: result.totalResults,
+      lastPage: Math.ceil(result.totalResults / 24),
+    };
+  }
+
   const cacheKey = `similar:${id}:${page}:${limit}:${ratios || "all"}`;
 
   const cached = await cacheGet<{ wallpapers: Wallpaper[]; page: number; totalResults: number; lastPage: number }>(cacheKey);
@@ -143,8 +179,18 @@ export async function searchWallpapers(
   sort: string,
   page: number,
   ratios?: string,
-  atleast?: string
+  atleast?: string,
+  provider?: string
 ): Promise<{ wallpapers: Wallpaper[]; query: string; totalResults: number }> {
+  if (provider === "wallpaperscom") {
+    const result = await searchWpcomWallpapers(query, page);
+    return {
+      wallpapers: result.wallpapers,
+      query,
+      totalResults: result.totalResults,
+    };
+  }
+
   const cacheKey = `search:${query.toLowerCase()}:${sort}:${page}:${ratios || "all"}`;
 
   const cached = await cacheGet<{ wallpapers: Wallpaper[]; query: string; totalResults: number }>(cacheKey);
