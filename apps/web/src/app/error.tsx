@@ -10,7 +10,11 @@ export default function Error({
   reset: () => void;
 }) {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: "0 24px", textAlign: "center", background: tokens.color.bg }}>
+    <div style={{
+      minHeight: "100vh", display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: "center", gap: 16,
+      padding: "0 24px", textAlign: "center", background: tokens.color.bg,
+    }}>
       <div style={{
         width: 80, height: 80, borderRadius: tokens.radius.card,
         background: tokens.color.surface, border: `1px solid ${tokens.color.border}`,
