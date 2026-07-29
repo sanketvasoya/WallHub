@@ -36,6 +36,7 @@ function WallpaperViewerContent() {
     fetchNextPage: fetchNextSimilar,
     hasNextPage: hasSimilarNext,
     isFetchingNextPage: fetchingSimilar,
+    isLoading: similarLoading,
   } = useSimilarWallpapers(id);
   const {
     isFavorite,
@@ -341,28 +342,28 @@ function WallpaperViewerContent() {
       </AnimatePresence>
 
       {/* Similar wallpapers */}
-      {wallpaper && (
-        <Box sx={{ pb: { xs: 12, sm: 4 }, mt: 4 }}>
-          <Box sx={{ px: { xs: 3, sm: 4 }, mb: 2 }}>
-            <Typography variant="h6" fontWeight={600} sx={{ fontSize: "0.9375rem" }}>
-              Similar Wallpapers
+      <Box sx={{ pb: { xs: 12, sm: 4 }, mt: 4 }}>
+        <Box sx={{ px: { xs: 3, sm: 4 }, mb: 2 }}>
+          <Typography variant="h6" fontWeight={600} sx={{ fontSize: "0.9375rem" }}>
+            Similar Wallpapers
+          </Typography>
+        </Box>
+        {similarLoading ? (
+          <LoadingSkeleton variant="card" count={4} />
+        ) : similarWallpapers.length > 0 ? (
+          <>
+            <WallpaperGrid wallpapers={similarWallpapers} />
+            {fetchingSimilar && <LoadingSkeleton variant="card" count={4} />}
+            <div ref={sentinelRef} style={{ height: 1 }} />
+          </>
+        ) : (
+          <Box sx={{ px: { xs: 3, sm: 4 } }}>
+            <Typography variant="body2" sx={{ color: tokens.color.textSecondary }}>
+              No similar wallpapers found.
             </Typography>
           </Box>
-          {similarWallpapers.length > 0 ? (
-            <>
-              <WallpaperGrid wallpapers={similarWallpapers} />
-              {fetchingSimilar && <LoadingSkeleton count={4} />}
-              <div ref={sentinelRef} style={{ height: 1 }} />
-            </>
-          ) : !fetchingSimilar ? (
-            <Box sx={{ px: { xs: 3, sm: 4 }, py: 2 }}>
-              <Typography variant="body2" sx={{ color: tokens.color.textSecondary }}>
-                No similar wallpapers found.
-              </Typography>
-            </Box>
-          ) : null}
-        </Box>
-      )}
+        )}
+      </Box>
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </Box>
