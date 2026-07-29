@@ -22,6 +22,11 @@ function mapSortParam(sort: string): { sorting: string; topRange?: string } {
   return { sorting: "relevance", topRange: undefined };
 }
 
+function detectProvider(id: string, explicit?: string): string {
+  if (explicit === "wallpaperscom" || id.startsWith("wpcom-")) return "wallpaperscom";
+  return "wallhaven";
+}
+
 export async function getWallpapersByCategory(
   category: string,
   sort: string,
@@ -32,7 +37,7 @@ export async function getWallpapersByCategory(
   atleast?: string,
   provider?: string
 ): Promise<{ wallpapers: Wallpaper[]; page: number; totalResults: number; lastPage: number }> {
-  if (provider === "wallpaperscom") {
+  if (detectProvider("", provider) === "wallpaperscom") {
     const result = await fetchWpcomListing(page);
     return {
       wallpapers: result.wallpapers,
@@ -85,7 +90,7 @@ export async function getWallpapersByCategory(
 }
 
 export async function getWallpaperById(id: string, provider?: string): Promise<Wallpaper> {
-  if (provider === "wallpaperscom") {
+  if (detectProvider(id, provider) === "wallpaperscom") {
     const slug = id.replace(/^wpcom-/, "");
     const wallpaper = await fetchWpcomWallpaper(slug);
     if (!wallpaper) throw new Error("Wallpaper not found on Wallpapers.com");
@@ -123,8 +128,12 @@ export async function getSimilarWallpapers(
   atleast?: string,
   provider?: string
 ): Promise<{ wallpapers: Wallpaper[]; page: number; totalResults: number; lastPage: number }> {
-  if (provider === "wallpaperscom") {
-    const result = await fetchWpcomListing(page);
+  const resolvedProvider = detectProvider(id, provider);
+
+  if (resolvedProvider === "wallpaperscom") {
+    const wallpaper = await getWallpaperById(id, "wallpaperscom");
+    const searchTerms = [wallpaper.title, ...wallpaper.tags.slice(0, 5)].filter(Boolean).join(" ");
+    const result = await searchWpcomWallpapers(searchTerms, page);
     return {
       wallpapers: result.wallpapers.filter(w => w.id !== id),
       page: result.page,
