@@ -1,7 +1,6 @@
 "use client";
 
-import { Box, Typography, Button } from "@mui/material";
-import { motion } from "framer-motion";
+import { tokens } from "@/lib/tokens";
 
 export default function Error({
   error,
@@ -11,47 +10,31 @@ export default function Error({
   reset: () => void;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 2,
-          px: 3,
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: "0 24px", textAlign: "center", background: tokens.color.bg }}>
+      <div style={{
+        width: 80, height: 80, borderRadius: tokens.radius.card,
+        background: tokens.color.surface, border: `1px solid ${tokens.color.border}`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: "2rem", color: tokens.color.textTertiary,
+      }}>
+        !
+      </div>
+      <h1 style={{ fontSize: "1.2rem", fontWeight: 700, margin: 0, color: tokens.color.textPrimary }}>
+        Something went wrong
+      </h1>
+      <p style={{ fontSize: "0.85rem", color: tokens.color.textSecondary, maxWidth: 360, lineHeight: 1.5, margin: 0 }}>
+        {error.message || "An unexpected error occurred. Please try again."}
+      </p>
+      <button
+        onClick={reset}
+        style={{
+          marginTop: 8, padding: "10px 24px", borderRadius: tokens.radius.button,
+          border: "none", background: tokens.color.primary, color: "#fff",
+          fontWeight: 600, cursor: "pointer", fontSize: "0.85rem",
         }}
       >
-        <Typography
-          variant="h4"
-          fontWeight={800}
-          sx={{
-            background: "linear-gradient(135deg, #7c4dff, #00e5ff)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          Oops!
-        </Typography>
-        <Typography variant="h6" fontWeight={600} sx={{ fontSize: "1rem" }}>
-          Something went wrong
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ textAlign: "center", maxWidth: 360, fontSize: "0.9rem" }}>
-          {error.message || "An unexpected error occurred"}
-        </Typography>
-        <Button
-          variant="contained"
-          onClick={reset}
-          sx={{ mt: 2, borderRadius: 3 }}
-        >
-          Try Again
-        </Button>
-      </Box>
-    </motion.div>
+        Try Again
+      </button>
+    </div>
   );
 }

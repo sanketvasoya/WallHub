@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { Box, IconButton, Tooltip, Typography, useTheme } from "@mui/material";
-import { Heart, Download, Share2, ImageIcon } from "lucide-react";
+import { useCallback, useState, useRef } from "react";
+import { Heart, Download, Share2 } from "lucide-react";
 import { motion } from "framer-motion";
 import NextLink from "next/link";
 import { useWallpaperActions } from "@/hooks/useWallpaperActions";
@@ -13,18 +12,12 @@ import type { Wallpaper } from "@/types";
 interface WallpaperCardProps {
   wallpaper: Wallpaper;
   index?: number;
-  variant?: "grid" | "masonry";
 }
 
-function formatUpvotes(n: number): string {
-  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
-  return String(n);
-}
-
-export default function WallpaperCard({ wallpaper, index = 0, variant = "grid" }: WallpaperCardProps) {
+export default function WallpaperCard({ wallpaper, index = 0 }: WallpaperCardProps) {
   const [imgError, setImgError] = useState(false);
-  const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
+  const [loaded, setLoaded] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   const { isFavorite, handleDownload, handleShare, handleToggleFavorite } = useWallpaperActions(wallpaper);
 
   const handleFavorite = useCallback(
@@ -54,286 +47,175 @@ export default function WallpaperCard({ wallpaper, index = 0, variant = "grid" }
     [handleShare],
   );
 
-  const delay = Math.min(index * 0.04, 0.5);
+  const delay = Math.min(index * 0.03, 0.4);
   const resBadge = getResolutionBadge(wallpaper.width, wallpaper.height);
 
-  const aspectRatio =
-    variant === "masonry"
-      ? `${wallpaper.width} / ${wallpaper.height}`
-      : wallpaper.orientation === "portrait"
-        ? "3/4"
-        : "16/9";
-
-  const actionBtnBase = {
+  const actionBtn = {
     width: 34,
     height: 34,
-    borderRadius: "10px",
-    backdropFilter: "blur(16px)",
-    WebkitBackdropFilter: "blur(16px)",
-    transition: "all 0.2s cubic-bezier(0.16,1,0.3,1)",
-    "&:hover": {
-      transform: "scale(1.1)",
-    },
+    borderRadius: "50%",
+    border: "none",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "all 0.2s ease",
   } as const;
 
   return (
-    <NextLink href={`/wallpaper/${wallpaper.id}`} style={{ textDecoration: "none" }}>
+    <NextLink href={`/wallpaper/${wallpaper.id}`} style={{ textDecoration: "none", display: "block" }}>
       <motion.div
+        ref={cardRef}
         role="article"
         aria-label={wallpaper.title || `Wallpaper ${wallpaper.id}`}
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{
-          duration: 0.5,
+          duration: 0.3,
           delay,
-          ease: tokens.animation.curve.standard,
+          ease: tokens.animation.ease,
         }}
-        whileHover={{ scale: 1.015, transition: { duration: 0.3, ease: tokens.animation.curve.standard } }}
-        whileTap={{ scale: 0.985 }}
-        style={{ position: "relative", borderRadius: tokens.radius.xl, overflow: "hidden", cursor: "pointer" }}
+        whileHover={{ scale: 1.02, transition: { duration: 0.25, ease: tokens.animation.ease } }}
+        whileTap={{ scale: 0.98 }}
+        style={{
+          position: "relative",
+          borderRadius: tokens.radius.card,
+          overflow: "hidden",
+          cursor: "pointer",
+          willChange: "transform",
+        }}
       >
-        <Box
-          sx={{
-            position: "relative",
-            overflow: "hidden",
-            borderRadius: tokens.radius.xl,
-            bgcolor: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)",
-            "&:hover .card-img": { transform: "scale(1.06)" },
-            "&:hover .card-gradient": { opacity: 1 },
-            "&:hover .card-info": { opacity: 1, transform: "translateY(0)" },
-            "&:hover .card-actions": { opacity: 1, transform: "translateY(0)" },
-          }}
-        >
+        <div style={{ position: "relative", overflow: "hidden" }}>
+          {!loaded && !imgError && (
+            <div
+              className="animate-shimmer"
+              style={{
+                width: "100%",
+                paddingBottom: `${(wallpaper.height / wallpaper.width) * 100}%`,
+                borderRadius: tokens.radius.card,
+              }}
+            />
+          )}
+
           {!imgError ? (
-            <Box
-              component="img"
+            <img
               src={wallpaper.preview || wallpaper.thumbnail}
               alt={wallpaper.title || `Wallpaper ${wallpaper.id}`}
               loading="lazy"
               decoding="async"
-              className="card-img"
+              onLoad={() => setLoaded(true)}
               onError={() => setImgError(true)}
-              sx={{
+              style={{
                 width: "100%",
                 display: "block",
-                aspectRatio,
-                objectFit: "cover",
-                transition: "transform 0.6s cubic-bezier(0.16,1,0.3,1)",
+                borderRadius: tokens.radius.card,
+                opacity: loaded ? 1 : 0,
+                transition: "opacity 0.3s ease",
               }}
             />
           ) : (
-            <Box
-              sx={{
+            <div
+              style={{
                 width: "100%",
                 aspectRatio: "16/9",
                 display: "flex",
-                flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                bgcolor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
-                gap: 1,
-                color: "text.secondary",
+                background: tokens.color.surface,
+                color: tokens.color.textTertiary,
+                borderRadius: tokens.radius.card,
+                fontSize: "0.75rem",
               }}
             >
-              <ImageIcon size={32} strokeWidth={1.5} />
-              <Typography variant="caption" sx={{ opacity: 0.6, fontSize: "0.7rem" }}>
-                Unavailable
-              </Typography>
-            </Box>
+              Unavailable
+            </div>
           )}
 
-          {/* Gradient overlay */}
-          <Box
-            className="card-gradient"
-            sx={{
+          <div
+            className="card-overlay"
+            style={{
               position: "absolute",
-              inset: 0,
-              background: `linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.15) 45%, transparent 100%)`,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              padding: "40px 12px 12px",
+              background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)",
               opacity: 0,
-              transition: "opacity 0.35s ease",
-              pointerEvents: "none",
-              borderRadius: tokens.radius.xl,
-            }}
-          />
-
-          {/* Top badges */}
-          <Box
-            sx={{
-              position: "absolute",
-              top: 10,
-              left: 10,
-              right: 10,
+              transition: "opacity 0.25s ease",
               display: "flex",
+              alignItems: "flex-end",
               justifyContent: "space-between",
-              alignItems: "center",
-              zIndex: 2,
-              pointerEvents: "none",
+              borderRadius: `0 0 ${tokens.radius.card}px ${tokens.radius.card}px`,
             }}
           >
-            <Box sx={{ display: "flex", gap: 0.5 }}>
-              <BadgePill dark={isDark}>{wallpaper.orientation}</BadgePill>
-              <BadgePill
-                dark={isDark}
-                sx={{
-                  background: isDark
-                    ? "rgba(91,95,239,0.65)"
-                    : "rgba(91,95,239,0.85)",
-                }}
-              >
-                {resBadge}
-              </BadgePill>
-            </Box>
-            <BadgePill dark={isDark} sx={{ color: tokens.color.accent }}>
-              {formatUpvotes(wallpaper.upvotes)}
-            </BadgePill>
-          </Box>
-
-          {/* Bottom info */}
-          <Box
-            className="card-info"
-            sx={{
-              position: "absolute",
-              bottom: 12,
-              left: 12,
-              right: 110,
-              opacity: 0,
-              transform: "translateY(8px)",
-              transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
-              zIndex: 2,
-              pointerEvents: "none",
-            }}
-          >
-            <Typography
-              variant="caption"
-              sx={{
-                color: "#fff",
-                fontWeight: 700,
-                fontSize: "0.78rem",
-                lineHeight: 1.2,
-                display: "-webkit-box",
-                WebkitLineClamp: 1,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-                textShadow: "0 1px 4px rgba(0,0,0,0.5)",
-                mb: 0.5,
+            <span
+              style={{
+                fontSize: "0.6rem",
+                fontWeight: 600,
+                color: "rgba(255,255,255,0.8)",
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
               }}
             >
-              {wallpaper.title || wallpaper.subreddit}
-            </Typography>
-            {wallpaper.colors && wallpaper.colors.length > 0 && (
-              <Box sx={{ display: "flex", gap: 0.4 }}>
-                {wallpaper.colors.slice(0, 5).map((c, i) => (
-                  <Box
-                    key={i}
-                    sx={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: "50%",
-                      bgcolor: c,
-                      border: "1.5px solid rgba(255,255,255,0.45)",
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-                    }}
-                  />
-                ))}
-              </Box>
-            )}
-          </Box>
+              {resBadge}
+            </span>
 
-          {/* Action buttons */}
-          <Box
-            className="card-actions"
-            sx={{
-              position: "absolute",
-              bottom: 10,
-              right: 10,
-              display: "flex",
-              gap: 0.5,
-              opacity: 0,
-              transform: "translateY(8px)",
-              transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
-              zIndex: 2,
-            }}
-          >
-            <Tooltip title={isFavorite ? "Remove favorite" : "Add to favorites"} arrow placement="top">
-              <IconButton
-                size="small"
+            <div style={{ display: "flex", gap: 6 }}>
+              <button
                 aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
                 onClick={handleFavorite}
-                sx={{
-                  ...actionBtnBase,
-                  bgcolor: "rgba(0,0,0,0.5)",
+                style={{
+                  ...actionBtn,
+                  background: "rgba(0,0,0,0.5)",
                   color: isFavorite ? "#FF6B9D" : "rgba(255,255,255,0.9)",
-                  "&:hover": { bgcolor: "rgba(0,0,0,0.7)" },
                 }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0,0,0,0.7)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(0,0,0,0.5)"; }}
               >
-                <Heart size={15} fill={isFavorite ? "#FF6B9D" : "none"} strokeWidth={2} />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Download" arrow placement="top">
-              <IconButton
-                size="small"
+                <Heart size={14} fill={isFavorite ? "#FF6B9D" : "none"} strokeWidth={2} />
+              </button>
+              <button
                 aria-label="Download wallpaper"
                 onClick={handleDownloadClick}
-                sx={{
-                  ...actionBtnBase,
-                  bgcolor: "rgba(0,0,0,0.5)",
+                style={{
+                  ...actionBtn,
+                  background: "rgba(0,0,0,0.5)",
                   color: "rgba(255,255,255,0.9)",
-                  "&:hover": { bgcolor: "rgba(0,0,0,0.7)" },
                 }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0,0,0,0.7)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(0,0,0,0.5)"; }}
               >
-                <Download size={15} strokeWidth={2} />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Share" arrow placement="top">
-              <IconButton
-                size="small"
+                <Download size={14} strokeWidth={2} />
+              </button>
+              <button
                 aria-label="Share wallpaper"
                 onClick={handleShareClick}
-                sx={{
-                  ...actionBtnBase,
-                  bgcolor: "rgba(0,0,0,0.5)",
+                style={{
+                  ...actionBtn,
+                  background: "rgba(0,0,0,0.5)",
                   color: "rgba(255,255,255,0.9)",
-                  "&:hover": { bgcolor: "rgba(0,0,0,0.7)" },
                 }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0,0,0,0.7)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(0,0,0,0.5)"; }}
               >
-                <Share2 size={15} strokeWidth={2} />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        </Box>
+                <Share2 size={14} strokeWidth={2} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <style>{`
+          .card-overlay {
+            pointer-events: none;
+          }
+          .card-overlay button {
+            pointer-events: auto;
+          }
+          div:hover > div > .card-overlay {
+            opacity: 1;
+          }
+        `}</style>
       </motion.div>
     </NextLink>
-  );
-}
-
-function BadgePill({
-  children,
-  dark,
-  sx,
-}: {
-  children: React.ReactNode;
-  dark: boolean;
-  sx?: object;
-}) {
-  return (
-    <Box
-      sx={{
-        px: 1,
-        py: 0.25,
-        borderRadius: "8px",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        background: dark ? "rgba(0,0,0,0.5)" : "rgba(0,0,0,0.45)",
-        fontSize: "0.6rem",
-        fontWeight: 700,
-        color: "#fff",
-        textTransform: "uppercase",
-        letterSpacing: "0.05em",
-        lineHeight: 1.6,
-        ...sx,
-      }}
-    >
-      {children}
-    </Box>
   );
 }

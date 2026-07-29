@@ -42,6 +42,13 @@ api.interceptors.response.use(
   }
 );
 
+export async function fetchFeed(page: number = 1, ratios?: string, atleast?: string): Promise<WallpapersResponse> {
+  const { data } = await api.get<WallpapersResponse>("/feed", {
+    params: { page, limit: 30, ...(ratios ? { ratios } : {}), ...(atleast ? { atleast } : {}) },
+  });
+  return data;
+}
+
 export async function fetchCategories(): Promise<CategoriesResponse> {
   const { data } = await api.get<CategoriesResponse>("/categories");
   return data;

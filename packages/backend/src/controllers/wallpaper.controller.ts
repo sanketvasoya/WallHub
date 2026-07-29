@@ -1,5 +1,5 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
-import { getCategoryBySlug } from "../config/categories.js";
+import { getCategoryBySlug, CATEGORIES } from "../config/categories.js";
 import {
   getWallpapersByCategory,
   getWallpaperById,
@@ -28,6 +28,40 @@ interface SimilarQuery {
   limit?: string;
   ratios?: string;
   atleast?: string;
+}
+
+interface FeedQuery {
+  page?: string;
+  ratios?: string;
+  atleast?: string;
+}
+
+export async function getFeed(
+  request: FastifyRequest<{ Querystring: FeedQuery }>,
+  reply: FastifyReply
+) {
+  const { page = "1", ratios, atleast } = request.query;
+  const pageNum = Math.max(1, parseInt(page, 10) || 1);
+
+  try {
+    const cat = CATEGORIES.find(c => c.slug === "trending") || CATEGORIES[0]!;
+    return await getWallpapersByCategory(
+      "feed",
+      "hot",
+      pageNum,
+      [],
+      "111",
+      ratios,
+      atleast
+    );
+  } catch (error: any) {
+    request.log.error(error);
+    if (error?.statusCode === 429) {
+      reply.header("Retry-After", error.retryAfter || "30");
+      return reply.status(429).send({ error: "Rate limited by Wallhaven", retryAfter: error.retryAfter });
+    }
+    return reply.status(502).send({ error: "Failed to fetch wallpapers" });
+  }
 }
 
 export async function getSimilar(

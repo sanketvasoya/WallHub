@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Box } from "@mui/material";
 import { useRouter } from "next/navigation";
 import SearchInput from "@/components/ui/SearchInput";
 
@@ -32,25 +31,23 @@ export default function SearchBar({ fullWidth = false, autoFocus = false }: Sear
   );
 
   return (
-    <Box
-      sx={{
+    <div
+      style={{
         position: "relative",
-        width: fullWidth ? "100%" : { xs: "100%", md: 460 },
+        width: fullWidth ? "100%" : "100%",
+        maxWidth: fullWidth ? "100%" : 460,
       }}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setTimeout(() => setFocused(false), 200)}
     >
-      <Box
-        onFocus={() => setFocused(true)}
-        onBlur={() => setTimeout(() => setFocused(false), 200)}
-      >
-        <SearchInput
-          value={query}
-          onChange={setQuery}
-          onSubmit={handleSubmit}
-          onSelect={handleSelect}
-          autoFocus={autoFocus}
-          showSuggestions={focused}
-        />
-      </Box>
-    </Box>
+      <SearchInput
+        value={query}
+        onChange={setQuery}
+        onSubmit={handleSubmit}
+        onSelect={handleSelect}
+        autoFocus={autoFocus}
+        showSuggestions={focused && !query}
+      />
+    </div>
   );
 }

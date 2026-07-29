@@ -46,59 +46,29 @@ export function useWallpaperActions(wallpaper: Wallpaper | null | undefined) {
   );
   const addDownload = useDownloadHistoryStore((s) => s.addDownload);
   const [downloading, setDownloading] = useState(false);
-  const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
 
   const handleDownload = useCallback(async () => {
     if (!wallpaper) return;
 
     setDownloading(true);
-    setDownloadProgress(0);
 
     try {
       const response = await fetchWithRetry(wallpaper.image);
-
-      const contentLength = response.headers.get("content-length");
-      const total = contentLength ? parseInt(contentLength, 10) : 0;
 
       const ext = extractExtension(wallpaper.image);
       const safeTitle = sanitizeFilename(wallpaper.title || wallpaper.id);
       const filename = `${safeTitle}.${ext}`;
 
-      if (response.body && total > 0) {
-        const reader = response.body.getReader();
-        const chunks: Uint8Array[] = [];
-        let received = 0;
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          chunks.push(value);
-          received += value.length;
-          setDownloadProgress(Math.round((received / total) * 100));
-        }
-
-        const blob = new Blob(chunks as BlobPart[]);
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      } else {
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }
-
-      setDownloadProgress(100);
       toast.success("Download complete!");
 
       addDownload({
@@ -107,13 +77,11 @@ export function useWallpaperActions(wallpaper: Wallpaper | null | undefined) {
         thumbnail: wallpaper.thumbnail,
         filesize: wallpaper.filesize,
       });
-    } catch (err) {
-      console.error("Download failed:", err);
+    } catch {
       toast.error("Download failed. Opening in new tab instead.");
       window.open(wallpaper.image, "_blank", "noopener,noreferrer");
     } finally {
       setDownloading(false);
-      setTimeout(() => setDownloadProgress(null), 2000);
     }
   }, [wallpaper, addDownload]);
 
@@ -139,8 +107,9 @@ export function useWallpaperActions(wallpaper: Wallpaper | null | undefined) {
   const handleToggleFavorite = useCallback(() => {
     if (!wallpaper) return;
     toggleFavorite(wallpaper.id);
-    toast.success(isFavorite ? "Removed from favorites" : "Added to favorites");
-  }, [wallpaper, toggleFavorite, isFavorite]);
+    const nowFav = useFavoritesStore.getState().favorites.includes(wallpaper.id);
+    toast.success(nowFav ? "Added to favorites" : "Removed from favorites");
+  }, [wallpaper, toggleFavorite]);
 
   return {
     isFavorite,
@@ -148,6 +117,5 @@ export function useWallpaperActions(wallpaper: Wallpaper | null | undefined) {
     handleShare,
     handleToggleFavorite,
     downloading,
-    downloadProgress,
   };
 }

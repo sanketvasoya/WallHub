@@ -2,6 +2,7 @@
 
 import { useQuery, useInfiniteQuery, keepPreviousData } from "@tanstack/react-query";
 import {
+  fetchFeed,
   fetchCategories,
   fetchCategory,
   fetchWallpapers,
@@ -13,6 +14,19 @@ import {
   fetchCollection,
   fetchHomepage,
 } from "@/lib/api/client";
+
+export function useFeed(ratios?: string, atleast?: string) {
+  return useInfiniteQuery({
+    queryKey: ["feed", ratios || "all", atleast || "1920x1080"],
+    queryFn: ({ pageParam = 1 }) => fetchFeed(pageParam, ratios, atleast),
+    getNextPageParam: (lastPage) => {
+      if (lastPage.page >= lastPage.lastPage) return undefined;
+      return lastPage.page + 1;
+    },
+    initialPageParam: 1,
+    staleTime: 2 * 60 * 1000,
+  });
+}
 
 export function useCategories() {
   return useQuery({

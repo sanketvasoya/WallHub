@@ -6,9 +6,11 @@ import {
   getSimilar,
   search,
   getTrendingSearches,
+  getFeed,
 } from "../controllers/wallpaper.controller.js";
 
 export async function wallpaperRoutes(app: FastifyInstance): Promise<void> {
+  app.get("/feed", getFeed);
   app.get("/wallpapers", getWallpapers);
   app.get("/wallpapers/batch", getWallpapersBatch);
   app.get("/wallpaper/:id", getWallpaper);

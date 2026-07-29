@@ -117,7 +117,7 @@ export default function PageHeader({
                   justifyContent: "center",
                   bgcolor: (t) =>
                     t.palette.mode === "dark"
-                      ? tokens.color.primaryAlpha15
+                      ? tokens.color.primaryAlpha10
                       : tokens.color.primaryAlpha10,
                   color: "primary.main",
                   flexShrink: 0,

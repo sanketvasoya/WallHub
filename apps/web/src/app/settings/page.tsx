@@ -1,68 +1,16 @@
 "use client";
 
-import {
-  Box,
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-  Select,
-  MenuItem,
-  Divider,
-  FormControl,
-  Button,
-  useTheme,
-} from "@mui/material";
-import { motion } from "framer-motion";
-import {
-  Moon,
-  Sun,
-  Monitor,
-  Settings,
-  Trash2,
-  Smartphone,
-  Monitor as DesktopIcon,
-  Image,
-  Info,
-  Layers,
-} from "lucide-react";
+import { Settings, Moon, Sun, Monitor, Trash2, Smartphone, Monitor as DesktopIcon, Image } from "lucide-react";
 import Header from "@/components/layout/Header";
 import BottomNav from "@/components/layout/BottomNav";
-import PageHeader from "@/components/ui/PageHeader";
 import { useSettingsStore, useSearchHistoryStore, useDownloadHistoryStore } from "@/lib/stores";
 import { useOrientation } from "@/hooks/useOrientation";
 import { tokens } from "@/lib/tokens";
 import toast from "react-hot-toast";
 
-const MotionBox = motion.create(Box);
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <Typography
-      variant="caption"
-      color="primary"
-      fontWeight={700}
-      sx={{
-        mb: 1,
-        ml: 1,
-        display: "block",
-        textTransform: "uppercase",
-        letterSpacing: "0.08em",
-        fontSize: "0.65rem",
-      }}
-    >
-      {children}
-    </Typography>
-  );
-}
-
 function SettingsContent() {
-  const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
   const themeVal = useSettingsStore((s) => s.theme);
   const setTheme = useSettingsStore((s) => s.setTheme);
-  const gridDensity = useSettingsStore((s) => s.gridDensity);
-  const setGridDensity = useSettingsStore((s) => s.setGridDensity);
   const clearSearchHistory = useSearchHistoryStore((s) => s.clearHistory);
   const clearDownloadHistory = useDownloadHistoryStore((s) => s.clearHistory);
   const { resolved: orientation, setPreference: setOrientation } = useOrientation();
@@ -77,228 +25,194 @@ function SettingsContent() {
     toast.success("Download history cleared");
   };
 
-  const listSx = {
-    bgcolor: isDark ? tokens.color.surfaceDark : tokens.color.surfaceLight,
-    borderRadius: 3,
-    border: "1px solid",
-    borderColor: isDark ? tokens.color.borderDark : tokens.color.borderLight,
-    mb: 3,
+  const themeOptions = [
+    { value: "dark", icon: <Moon size={16} />, label: "Dark" },
+    { value: "light", icon: <Sun size={16} />, label: "Light" },
+    { value: "system", icon: <Monitor size={16} />, label: "System" },
+  ] as const;
+
+  const orientationOptions = [
+    { value: "phone", icon: <Smartphone size={16} />, label: "Phone" },
+    { value: "desktop", icon: <DesktopIcon size={16} />, label: "Desktop" },
+    { value: "all", icon: <Image size={16} />, label: "All" },
+  ] as const;
+
+  const sectionStyle = {
+    marginBottom: 24,
   };
 
-  const selectSx = {
-    borderRadius: 2,
-    fontSize: "0.85rem",
-    fontWeight: 500,
-    "& .MuiSelect-select": { py: 1 },
+  const cardStyle = {
+    borderRadius: tokens.radius.button,
+    background: tokens.color.surface,
+    border: `1px solid ${tokens.color.border}`,
+    overflow: "hidden",
+  };
+
+  const rowStyle = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "14px 16px",
   };
 
   return (
-    <Box sx={{ pb: { xs: 10, sm: 4 } }}>
+    <div style={{ paddingBottom: 80 }}>
       <Header />
 
-      <Box sx={{ px: { xs: 2, sm: 3 }, pt: 2 }}>
-        <MotionBox
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: tokens.animation.curve.standard }}
-        >
-          <PageHeader
-            title="Settings"
-            subtitle="Customize your app preferences and manage local storage"
-            icon={<Settings size={18} strokeWidth={2.2} />}
-          />
-        </MotionBox>
+      <div style={{ padding: "16px 24px 8px", maxWidth: 640, margin: "0 auto" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: tokens.radius.button,
+            background: tokens.color.primaryAlpha20, display: "flex",
+            alignItems: "center", justifyContent: "center", color: tokens.color.primary,
+          }}>
+            <Settings size={18} />
+          </div>
+          <div>
+            <h1 style={{ fontSize: "1.1rem", fontWeight: 700, margin: 0, color: tokens.color.textPrimary }}>
+              Settings
+            </h1>
+            <span style={{ fontSize: "0.8rem", color: tokens.color.textSecondary }}>
+              Customize your experience
+            </span>
+          </div>
+        </div>
 
-        <MotionBox
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1, ease: tokens.animation.curve.standard }}
-        >
-          <SectionLabel>Appearance</SectionLabel>
-          <List sx={listSx}>
-            <ListItem>
-              <ListItemText
-                primary="Theme"
-                secondary="Choose your preferred color theme"
-                primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }}
-                secondaryTypographyProps={{ fontSize: "0.78rem" }}
-              />
-              <FormControl size="small" sx={{ minWidth: 120 }}>
-                <Select
-                  value={themeVal}
-                  onChange={(e) =>
-                    setTheme(e.target.value as "light" | "dark" | "system")
-                  }
-                  sx={selectSx}
-                >
-                  <MenuItem value="dark">
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Moon size={16} /> Dark
-                    </Box>
-                  </MenuItem>
-                  <MenuItem value="light">
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Sun size={16} /> Light
-                    </Box>
-                  </MenuItem>
-                  <MenuItem value="system">
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Monitor size={16} /> System
-                    </Box>
-                  </MenuItem>
-                </Select>
-              </FormControl>
-            </ListItem>
-            <Divider sx={{ opacity: 0.06 }} />
-            <ListItem>
-              <ListItemText
-                primary="Grid Density"
-                secondary="Control wallpaper grid column count"
-                primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }}
-                secondaryTypographyProps={{ fontSize: "0.78rem" }}
-              />
-              <FormControl size="small" sx={{ minWidth: 140 }}>
-                <Select
-                  value={gridDensity}
-                  onChange={(e) =>
-                    setGridDensity(
-                      e.target.value as "compact" | "comfortable" | "spacious"
-                    )
-                  }
-                  sx={selectSx}
-                >
-                  <MenuItem value="compact">Compact</MenuItem>
-                  <MenuItem value="comfortable">Comfortable</MenuItem>
-                  <MenuItem value="spacious">Spacious</MenuItem>
-                </Select>
-              </FormControl>
-            </ListItem>
-            <Divider sx={{ opacity: 0.06 }} />
-            <ListItem>
-              <ListItemText
-                primary="Wallpaper Orientation"
-                secondary="Filter wallpapers by aspect ratio"
-                primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }}
-                secondaryTypographyProps={{ fontSize: "0.78rem" }}
-              />
-              <FormControl size="small" sx={{ minWidth: 140 }}>
-                <Select
-                  value={orientation}
-                  onChange={(e) =>
-                    setOrientation(
-                      e.target.value as "phone" | "desktop" | "all"
-                    )
-                  }
-                  sx={selectSx}
-                >
-                  <MenuItem value="phone">
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Smartphone size={16} /> Phone
-                    </Box>
-                  </MenuItem>
-                  <MenuItem value="desktop">
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <DesktopIcon size={16} /> Desktop
-                    </Box>
-                  </MenuItem>
-                  <MenuItem value="all">
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Image size={16} /> All
-                    </Box>
-                  </MenuItem>
-                </Select>
-              </FormControl>
-            </ListItem>
-          </List>
-        </MotionBox>
+        {/* Appearance */}
+        <div style={sectionStyle}>
+          <div style={{ fontSize: "0.6875rem", fontWeight: 600, color: tokens.color.primary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8, marginLeft: 4 }}>
+            Appearance
+          </div>
+          <div style={cardStyle}>
+            <div style={rowStyle}>
+              <div>
+                <div style={{ fontSize: "0.9rem", fontWeight: 600, color: tokens.color.textPrimary }}>Theme</div>
+                <div style={{ fontSize: "0.78rem", color: tokens.color.textSecondary, marginTop: 2 }}>Choose your preferred theme</div>
+              </div>
+              <select
+                value={themeVal}
+                onChange={(e) => setTheme(e.target.value as "light" | "dark" | "system")}
+                style={{
+                  borderRadius: tokens.radius.button,
+                  padding: "6px 10px",
+                  border: `1px solid ${tokens.color.border}`,
+                  background: tokens.color.surfaceVariant,
+                  color: tokens.color.textPrimary,
+                  fontSize: "0.85rem",
+                  fontWeight: 500,
+                  outline: "none",
+                }}
+              >
+                {themeOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value} style={{ background: tokens.color.surface, color: tokens.color.textPrimary }}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div style={{ height: 1, background: tokens.color.border, margin: "0 16px" }} />
+            <div style={rowStyle}>
+              <div>
+                <div style={{ fontSize: "0.9rem", fontWeight: 600, color: tokens.color.textPrimary }}>Orientation</div>
+                <div style={{ fontSize: "0.78rem", color: tokens.color.textSecondary, marginTop: 2 }}>Filter by aspect ratio</div>
+              </div>
+              <select
+                value={orientation}
+                onChange={(e) => setOrientation(e.target.value as "phone" | "desktop" | "all")}
+                style={{
+                  borderRadius: tokens.radius.button,
+                  padding: "6px 10px",
+                  border: `1px solid ${tokens.color.border}`,
+                  background: tokens.color.surfaceVariant,
+                  color: tokens.color.textPrimary,
+                  fontSize: "0.85rem",
+                  fontWeight: 500,
+                  outline: "none",
+                }}
+              >
+                {orientationOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value} style={{ background: tokens.color.surface, color: tokens.color.textPrimary }}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
 
-        <MotionBox
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2, ease: tokens.animation.curve.standard }}
-        >
-          <SectionLabel>Data & Privacy</SectionLabel>
-          <List sx={listSx}>
-            <ListItem>
-              <ListItemText
-                primary="Clear Search History"
-                secondary="Remove all saved search suggestions"
-                primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }}
-                secondaryTypographyProps={{ fontSize: "0.78rem" }}
-              />
-              <Button
-                size="small"
-                variant="outlined"
-                color="error"
+        {/* Data */}
+        <div style={sectionStyle}>
+          <div style={{ fontSize: "0.6875rem", fontWeight: 600, color: tokens.color.primary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8, marginLeft: 4 }}>
+            Data
+          </div>
+          <div style={cardStyle}>
+            <div style={rowStyle}>
+              <div>
+                <div style={{ fontSize: "0.9rem", fontWeight: 600, color: tokens.color.textPrimary }}>Search History</div>
+                <div style={{ fontSize: "0.78rem", color: tokens.color.textSecondary, marginTop: 2 }}>Clear saved search suggestions</div>
+              </div>
+              <button
                 onClick={handleClearSearch}
-                startIcon={<Trash2 size={14} />}
-                sx={{
-                  borderRadius: 2.5,
-                  textTransform: "none",
-                  fontWeight: 600,
-                  fontSize: "0.8rem",
+                style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  padding: "6px 14px", borderRadius: tokens.radius.button,
+                  border: `1px solid ${tokens.color.error}`, background: "transparent",
+                  color: tokens.color.error, fontSize: "0.8rem", fontWeight: 600,
+                  cursor: "pointer",
                 }}
               >
+                <Trash2 size={14} />
                 Clear
-              </Button>
-            </ListItem>
-            <Divider sx={{ opacity: 0.06 }} />
-            <ListItem>
-              <ListItemText
-                primary="Clear Download History"
-                secondary="Remove download history entries"
-                primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }}
-                secondaryTypographyProps={{ fontSize: "0.78rem" }}
-              />
-              <Button
-                size="small"
-                variant="outlined"
-                color="error"
+              </button>
+            </div>
+            <div style={{ height: 1, background: tokens.color.border, margin: "0 16px" }} />
+            <div style={rowStyle}>
+              <div>
+                <div style={{ fontSize: "0.9rem", fontWeight: 600, color: tokens.color.textPrimary }}>Download History</div>
+                <div style={{ fontSize: "0.78rem", color: tokens.color.textSecondary, marginTop: 2 }}>Clear download records</div>
+              </div>
+              <button
                 onClick={handleClearDownloads}
-                startIcon={<Trash2 size={14} />}
-                sx={{
-                  borderRadius: 2.5,
-                  textTransform: "none",
-                  fontWeight: 600,
-                  fontSize: "0.8rem",
+                style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  padding: "6px 14px", borderRadius: tokens.radius.button,
+                  border: `1px solid ${tokens.color.error}`, background: "transparent",
+                  color: tokens.color.error, fontSize: "0.8rem", fontWeight: 600,
+                  cursor: "pointer",
                 }}
               >
+                <Trash2 size={14} />
                 Clear
-              </Button>
-            </ListItem>
-          </List>
-        </MotionBox>
+              </button>
+            </div>
+          </div>
+        </div>
 
-        <MotionBox
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.3, ease: tokens.animation.curve.standard }}
-        >
-          <SectionLabel>About</SectionLabel>
-          <List sx={listSx}>
-            <ListItem>
-              <ListItemText
-                primary="Wallection"
-                secondary="Version 2.0.0 (Production Polish)"
-                primaryTypographyProps={{ fontWeight: 600, fontSize: "0.9rem" }}
-                secondaryTypographyProps={{ fontSize: "0.78rem" }}
-              />
-            </ListItem>
-            <Divider sx={{ opacity: 0.06 }} />
-            <ListItem>
-              <ListItemText
-                primary="Platform Stack"
-                secondary="Next.js 15, MUI v7, TanStack Query & Fastify"
-                primaryTypographyProps={{ fontWeight: 500, fontSize: "0.9rem" }}
-                secondaryTypographyProps={{ fontSize: "0.78rem" }}
-              />
-            </ListItem>
-          </List>
-        </MotionBox>
-      </Box>
+        {/* About */}
+        <div style={sectionStyle}>
+          <div style={{ fontSize: "0.6875rem", fontWeight: 600, color: tokens.color.primary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8, marginLeft: 4 }}>
+            About
+          </div>
+          <div style={cardStyle}>
+            <div style={rowStyle}>
+              <div>
+                <div style={{ fontSize: "0.9rem", fontWeight: 600, color: tokens.color.textPrimary }}>WallHub</div>
+                <div style={{ fontSize: "0.78rem", color: tokens.color.textSecondary, marginTop: 2 }}>Version 3.0.0</div>
+              </div>
+            </div>
+            <div style={{ height: 1, background: tokens.color.border, margin: "0 16px" }} />
+            <div style={rowStyle}>
+              <div>
+                <div style={{ fontSize: "0.9rem", fontWeight: 500, color: tokens.color.textPrimary }}>Stack</div>
+                <div style={{ fontSize: "0.78rem", color: tokens.color.textSecondary, marginTop: 2 }}>Next.js 15 · Fastify · Wallhaven</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <BottomNav />
-    </Box>
+    </div>
   );
 }
 

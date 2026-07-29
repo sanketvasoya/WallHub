@@ -1,27 +1,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import {
-  Box,
-  Typography,
-  Button,
-  TextField,
-  InputAdornment,
-  Chip,
-  useTheme,
-} from "@mui/material";
-import { motion } from "framer-motion";
-import {
-  Heart,
-  HeartOff,
-  Search,
-  Trash2,
-  Compass,
-} from "lucide-react";
+import { InputAdornment } from "@mui/material";
+import { Search, Heart, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import BottomNav from "@/components/layout/BottomNav";
-import PageHeader from "@/components/ui/PageHeader";
 import WallpaperGrid from "@/components/wallpaper/WallpaperGrid";
 import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 import ErrorState from "@/components/ui/ErrorState";
@@ -29,12 +13,8 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useFavoritesStore } from "@/lib/stores";
 import { tokens } from "@/lib/tokens";
 
-const MotionBox = motion.create(Box);
-
 function FavoritesContent() {
   const router = useRouter();
-  const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
   const { wallpapers, count, isLoading, isError } = useFavorites();
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -44,214 +24,123 @@ function FavoritesContent() {
     return wallpapers.filter(
       (w) =>
         w.title?.toLowerCase().includes(q) ||
-        w.subreddit?.toLowerCase().includes(q) ||
         w.tags?.some((t) => t.toLowerCase().includes(q))
     );
   }, [wallpapers, searchQuery]);
 
   const clearFavorites = () => {
-    if (
-      window.confirm(
-        "Are you sure you want to remove all wallpapers from your favorites?"
-      )
-    ) {
+    if (window.confirm("Remove all favorites?")) {
       useFavoritesStore.setState({ favorites: [] });
     }
   };
 
   return (
-    <Box sx={{ pb: { xs: 10, sm: 4 } }}>
+    <div style={{ paddingBottom: 80 }}>
       <Header />
 
-      <Box sx={{ px: { xs: 2, sm: 3 }, pt: 2 }}>
-        <MotionBox
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: tokens.animation.curve.standard }}
-        >
-          <PageHeader
-            title="Favorites"
-            subtitle={
-              count > 0
-                ? `${count} saved wallpapers`
-                : "Your saved wallpaper collection"
-            }
-            icon={<Heart size={18} strokeWidth={2.2} />}
-            action={
-              count > 0 ? (
-                <Chip
-                  label="Clear All"
-                  onClick={clearFavorites}
-                  icon={<Trash2 size={14} />}
-                  size="small"
-                  sx={{
-                    bgcolor: isDark ? tokens.color.errorAlpha : tokens.color.errorAlpha,
-                    color: tokens.color.error,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    fontSize: "0.78rem",
-                    "&:hover": {
-                      bgcolor: isDark
-                        ? "rgba(239, 68, 68, 0.2)"
-                        : "rgba(239, 68, 68, 0.15)",
-                    },
-                  }}
-                />
-              ) : undefined
-            }
-          />
-        </MotionBox>
+      <div style={{ padding: "16px 24px 8px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: tokens.radius.button,
+              background: tokens.color.primaryAlpha20, display: "flex",
+              alignItems: "center", justifyContent: "center", color: tokens.color.primary,
+            }}>
+              <Heart size={18} />
+            </div>
+            <div>
+              <h1 style={{ fontSize: "1.1rem", fontWeight: 700, margin: 0, color: tokens.color.textPrimary }}>
+                Favorites
+              </h1>
+              {count > 0 && (
+                <span style={{ fontSize: "0.8rem", color: tokens.color.textSecondary }}>
+                  {count} saved
+                </span>
+              )}
+            </div>
+          </div>
+          {count > 0 && (
+            <button
+              onClick={clearFavorites}
+              style={{
+                display: "flex", alignItems: "center", gap: 6,
+                padding: "6px 14px", borderRadius: tokens.radius.button,
+                border: "none", background: tokens.color.errorAlpha10,
+                color: tokens.color.error, fontSize: "0.78rem", fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              <Trash2 size={14} />
+              Clear All
+            </button>
+          )}
+        </div>
 
         {count > 0 && (
-          <MotionBox
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1, ease: tokens.animation.curve.standard }}
-          >
-            <Box sx={{ mb: 3 }}>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Search in favorites..."
+          <div style={{ marginBottom: 16 }}>
+            <div style={{
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "0 16px", height: 44, borderRadius: tokens.radius.pill,
+              background: tokens.color.surface,
+              border: `1px solid ${tokens.color.border}`,
+            }}>
+              <Search size={18} color={tokens.color.textTertiary} />
+              <input
+                type="text"
+                placeholder="Search favorites..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Search
-                          size={18}
-                          style={{ color: tokens.color.textDarkSecondary }}
-                        />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 100,
-                    fontSize: "0.85rem",
-                    height: 44,
-                    bgcolor: isDark ? tokens.color.surfaceDark : tokens.color.surfaceLight,
-                    border: "1px solid",
-                    borderColor: isDark ? tokens.color.borderDark : tokens.color.borderLight,
-                    transition: "all 0.25s ease",
-                    "&:hover": {
-                      borderColor: isDark ? tokens.color.borderDarkHover : tokens.color.borderLightHover,
-                    },
-                    "&.Mui-focused": {
-                      borderColor: "primary.main",
-                    },
-                    "& fieldset": { border: "none" },
-                  },
+                style={{
+                  flex: 1, border: "none", background: "transparent",
+                  color: tokens.color.textPrimary, fontSize: "0.85rem",
+                  outline: "none",
                 }}
               />
-            </Box>
-          </MotionBox>
+            </div>
+          </div>
         )}
-      </Box>
+      </div>
 
       {isLoading ? (
         <LoadingSkeleton count={8} />
       ) : count === 0 ? (
-        <MotionBox
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: tokens.animation.curve.standard }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              py: 10,
-              gap: 2.5,
-              px: 3,
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "80px 24px", gap: 16, textAlign: "center" }}>
+          <div style={{
+            width: 72, height: 72, borderRadius: tokens.radius.card,
+            background: tokens.color.surface, border: `1px solid ${tokens.color.border}`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: tokens.color.textTertiary,
+          }}>
+            <Heart size={36} strokeWidth={1.5} />
+          </div>
+          <div style={{ fontSize: "1rem", fontWeight: 600, color: tokens.color.textPrimary }}>
+            No favorites yet
+          </div>
+          <div style={{ fontSize: "0.85rem", color: tokens.color.textSecondary, maxWidth: 300, lineHeight: 1.5 }}>
+            Tap the heart icon on any wallpaper to save it here
+          </div>
+          <button
+            onClick={() => router.push("/")}
+            style={{
+              padding: "10px 24px", borderRadius: tokens.radius.button,
+              border: "none", background: tokens.color.primary, color: "#fff",
+              fontWeight: 600, cursor: "pointer", fontSize: "0.85rem",
+              marginTop: 8,
             }}
           >
-            <Box
-              sx={{
-                width: 88,
-                height: 88,
-                borderRadius: 4,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                bgcolor: isDark ? tokens.color.surfaceDark : tokens.color.surfaceLight,
-                border: "1px solid",
-                borderColor: isDark ? tokens.color.borderDark : tokens.color.borderLight,
-              }}
-            >
-              <HeartOff
-                size={40}
-                strokeWidth={1.5}
-                style={{ color: tokens.color.textDarkSecondary }}
-              />
-            </Box>
-            <Typography
-              variant="h6"
-              color="text.primary"
-              fontWeight={700}
-              sx={{ fontSize: "1.1rem" }}
-            >
-              No favorites yet
-            </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
-                textAlign: "center",
-                maxWidth: 300,
-                fontSize: "0.85rem",
-                lineHeight: 1.6,
-              }}
-            >
-              Tap the heart icon on any wallpaper card to save it here for quick
-              access
-            </Typography>
-            <Button
-              variant="contained"
-              onClick={() => router.push("/")}
-              startIcon={<Compass size={16} />}
-              sx={{
-                mt: 1,
-                borderRadius: 2.5,
-                px: 3,
-                py: 1,
-                textTransform: "none",
-                fontWeight: 600,
-                boxShadow: isDark ? tokens.shadows.dark.primary : tokens.shadows.light.primary,
-                "&:hover": {
-                  boxShadow: isDark ? tokens.shadows.dark.lg : tokens.shadows.light.lg,
-                },
-              }}
-            >
-              Explore Wallpapers
-            </Button>
-          </Box>
-        </MotionBox>
+            Browse Wallpapers
+          </button>
+        </div>
       ) : isError ? (
         <ErrorState message="Failed to load favorites" />
       ) : filteredWallpapers.length === 0 ? (
-        <ErrorState
-          type="notFound"
-          message={`No favorites match "${searchQuery}"`}
-        />
+        <ErrorState type="notFound" message={`No favorites match "${searchQuery}"`} />
       ) : (
-        <MotionBox
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.15 }}
-        >
-          <Box sx={{ mt: 1 }}>
-            <WallpaperGrid wallpapers={filteredWallpapers} />
-          </Box>
-        </MotionBox>
+        <WallpaperGrid wallpapers={filteredWallpapers} />
       )}
 
       <BottomNav />
-    </Box>
+    </div>
   );
 }
 

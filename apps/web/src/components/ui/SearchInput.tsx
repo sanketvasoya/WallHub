@@ -1,6 +1,5 @@
 "use client";
 
-import { Box, TextField, InputAdornment, IconButton, Chip, Typography } from "@mui/material";
 import { Search, X, TrendingUp, Clock } from "lucide-react";
 import { useSearchHistoryStore } from "@/lib/stores";
 import { TRENDING_SEARCHES } from "@/lib/constants";
@@ -15,22 +14,6 @@ interface SearchInputProps {
   autoFocus?: boolean;
   showSuggestions?: boolean;
 }
-
-const suggestionsVariants = {
-  hidden: { opacity: 0, y: -4, scale: 0.98 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] as const },
-  },
-  exit: {
-    opacity: 0,
-    y: -4,
-    scale: 0.98,
-    transition: { duration: 0.12 },
-  },
-};
 
 export default function SearchInput({
   value,
@@ -55,238 +38,231 @@ export default function SearchInput({
     onSelect(term);
   };
 
-  const hasSuggestions = history.length > 0 || TRENDING_SEARCHES.length > 0;
+  const hasSuggestions = showSuggestions && (history.length > 0 || TRENDING_SEARCHES.length > 0);
 
   return (
-    <Box sx={{ width: "100%" }}>
-      <Box component="form" onSubmit={handleSubmit}>
-        <TextField
-          fullWidth
+    <div style={{ width: "100%", position: "relative" }}>
+      <form onSubmit={handleSubmit}>
+        <input
           autoFocus={autoFocus}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Search wallpapers..."
-          variant="outlined"
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search size={18} style={{ color: "text.secondary" }} />
-                </InputAdornment>
-              ),
-              endAdornment: value ? (
-                <InputAdornment position="end">
-                  <IconButton
-                    size="small"
-                    onClick={() => onChange("")}
-                    sx={{
-                      width: 28,
-                      height: 28,
-                      "&:hover": { bgcolor: "action.hover" },
-                    }}
-                  >
-                    <X size={15} />
-                  </IconButton>
-                </InputAdornment>
-              ) : undefined,
-              sx: {
-                borderRadius: "100px",
-                height: 44,
-                bgcolor: (theme) =>
-                  theme.palette.mode === "dark"
-                    ? tokens.color.surface.dark
-                    : tokens.color.surface.light,
-                "& fieldset": {
-                  border: "1px solid",
-                  borderColor: (theme) => theme.palette.divider,
-                },
-                transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
-                "&:hover": {
-                  bgcolor: (theme) =>
-                    theme.palette.mode === "dark"
-                      ? tokens.color.surface.darkHover
-                      : tokens.color.surface.lightHover,
-                  "& fieldset": {
-                    borderColor: (theme) =>
-                      theme.palette.mode === "dark"
-                        ? tokens.color.borderDarkHover
-                        : tokens.color.borderLightHover,
-                  },
-                },
-                "&.Mui-focused": {
-                  "& fieldset": {
-                    borderColor: "primary.main",
-                    borderWidth: 1.5,
-                  },
-                },
-                fontSize: "0.875rem",
-              },
-            },
+          placeholder="Search wallpapers"
+          aria-label="Search wallpapers"
+          style={{
+            width: "100%",
+            height: 52,
+            borderRadius: tokens.radius.pill,
+            padding: "0 44px 0 20px",
+            border: "none",
+            background: tokens.color.surface,
+            color: tokens.color.textPrimary,
+            fontSize: "0.875rem",
+            outline: "none",
+            boxShadow: tokens.shadow.search,
+            transition: "box-shadow 0.2s ease",
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.boxShadow = `0 0 0 2px ${tokens.color.primaryAlpha30}, ${tokens.shadow.search}`;
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.boxShadow = tokens.shadow.search;
           }}
         />
-      </Box>
+        {value ? (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            aria-label="Clear search"
+            style={{
+              position: "absolute",
+              right: 12,
+              top: "50%",
+              transform: "translateY(-50%)",
+              width: 28,
+              height: 28,
+              borderRadius: "50%",
+              border: "none",
+              background: tokens.color.surfaceVariant,
+              color: tokens.color.textSecondary,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <X size={14} />
+          </button>
+        ) : (
+          <div
+            style={{
+              position: "absolute",
+              right: 16,
+              top: "50%",
+              transform: "translateY(-50%)",
+              color: tokens.color.textTertiary,
+              pointerEvents: "none",
+            }}
+          >
+            <Search size={18} />
+          </div>
+        )}
+      </form>
 
       <AnimatePresence>
-        {showSuggestions && hasSuggestions && (
+        {hasSuggestions && (
           <motion.div
-            variants={suggestionsVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            style={{ position: "absolute", zIndex: 10, left: 0, right: 0, top: "100%" }}
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15, ease: tokens.animation.ease }}
+            style={{
+              position: "absolute",
+              zIndex: 10,
+              left: 0,
+              right: 0,
+              top: "100%",
+              marginTop: 8,
+              padding: 12,
+              borderRadius: tokens.radius.input,
+              background: tokens.color.surface,
+              border: `1px solid ${tokens.color.border}`,
+              boxShadow: tokens.shadow.dialog,
+            }}
           >
-            <Box
-              sx={{
-                mt: 1,
-                mx: 0.5,
-                p: 1.5,
-                borderRadius: "16px",
-                bgcolor: (t) =>
-                  t.palette.mode === "dark"
-                    ? "rgba(24, 24, 27, 0.96)"
-                    : "rgba(255, 255, 255, 0.96)",
-                backdropFilter: "blur(24px) saturate(1.8)",
-                WebkitBackdropFilter: "blur(24px) saturate(1.8)",
-                border: "1px solid",
-                borderColor: (t) => t.palette.divider,
-                boxShadow: (t) =>
-                  t.palette.mode === "dark"
-                    ? tokens.shadows.dark.lg
-                    : tokens.shadows.light.lg,
-              }}
-            >
-              {history.length > 0 && (
-                <Box sx={{ mb: 2 }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      px: 1,
-                      mb: 0.5,
+            {history.length > 0 && (
+              <div style={{ marginBottom: 12 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "0 4px",
+                    marginBottom: 4,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "0.6875rem",
+                      fontWeight: 600,
+                      color: tokens.color.textSecondary,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.06em",
                     }}
                   >
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      fontWeight={600}
-                      sx={{
-                        fontSize: "0.68rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.06em",
+                    Recent
+                  </span>
+                  <button
+                    onClick={clearHistory}
+                    style={{
+                      border: "none",
+                      background: "none",
+                      color: tokens.color.primary,
+                      fontSize: "0.6875rem",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Clear
+                  </button>
+                </div>
+                {history.slice(0, 5).map((term) => (
+                  <div
+                    key={term}
+                    onClick={() => handleSelect(term)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      padding: "8px 8px",
+                      borderRadius: 10,
+                      cursor: "pointer",
+                      transition: "background 0.15s ease",
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = tokens.color.surfaceVariant}
+                    onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                  >
+                    <Clock size={14} color={tokens.color.textTertiary} />
+                    <span style={{ flex: 1, fontSize: "0.85rem", color: tokens.color.textPrimary }}>
+                      {term}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeSearch(term);
                       }}
-                    >
-                      Recent
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      color="primary.main"
-                      sx={{
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: "50%",
+                        border: "none",
+                        background: "transparent",
+                        color: tokens.color.textTertiary,
                         cursor: "pointer",
-                        fontSize: "0.68rem",
-                        fontWeight: 600,
-                        "&:hover": { textDecoration: "underline" },
-                      }}
-                      onClick={clearHistory}
-                    >
-                      Clear
-                    </Typography>
-                  </Box>
-                  {history.slice(0, 5).map((term) => (
-                    <Box
-                      key={term}
-                      sx={{
                         display: "flex",
                         alignItems: "center",
-                        gap: 1,
-                        px: 1,
-                        py: 0.75,
-                        borderRadius: "10px",
-                        cursor: "pointer",
-                        transition: "background 0.15s ease",
-                        "&:hover": { bgcolor: "action.hover" },
+                        justifyContent: "center",
                       }}
-                      onClick={() => handleSelect(term)}
                     >
-                      <Clock size={14} style={{ color: tokens.color.textLightSecondary, flexShrink: 0 }} />
-                      <Typography variant="body2" sx={{ flex: 1, fontSize: "0.85rem" }}>
-                        {term}
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeSearch(term);
-                        }}
-                        sx={{ width: 24, height: 24, "&:hover": { bgcolor: "action.hover" } }}
-                      >
-                        <X size={12} />
-                      </IconButton>
-                    </Box>
-                  ))}
-                </Box>
-              )}
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
-              {TRENDING_SEARCHES.length > 0 && (
-                <Box>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 0.5,
-                      px: 1,
-                      mb: 1,
+            {TRENDING_SEARCHES.length > 0 && (
+              <div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                    padding: "0 4px",
+                    marginBottom: 8,
+                  }}
+                >
+                  <TrendingUp size={13} color={tokens.color.textTertiary} />
+                  <span
+                    style={{
+                      fontSize: "0.6875rem",
+                      fontWeight: 600,
+                      color: tokens.color.textSecondary,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.06em",
                     }}
                   >
-                    <TrendingUp size={13} style={{ color: tokens.color.textLightSecondary }} />
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      fontWeight={600}
-                      sx={{
-                        fontSize: "0.68rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.06em",
+                    Trending
+                  </span>
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {TRENDING_SEARCHES.map((term) => (
+                    <button
+                      key={term}
+                      onClick={() => handleSelect(term)}
+                      style={{
+                        padding: "6px 14px",
+                        borderRadius: tokens.radius.pill,
+                        border: "none",
+                        background: tokens.color.surfaceVariant,
+                        color: tokens.color.textPrimary,
+                        fontSize: "0.75rem",
+                        fontWeight: 500,
+                        cursor: "pointer",
+                        transition: "background 0.15s ease",
                       }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = tokens.color.primaryAlpha20}
+                      onMouseLeave={(e) => e.currentTarget.style.background = tokens.color.surfaceVariant}
                     >
-                      Trending
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, px: 0.5 }}>
-                    {TRENDING_SEARCHES.map((term) => (
-                      <Chip
-                        key={term}
-                        label={term}
-                        size="small"
-                        onClick={() => handleSelect(term)}
-                        sx={{
-                          cursor: "pointer",
-                          borderRadius: "100px",
-                          fontSize: "0.75rem",
-                          height: 30,
-                          fontWeight: 500,
-                          transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
-                          bgcolor: (t) =>
-                            t.palette.mode === "dark"
-                              ? tokens.color.surface.dark
-                              : tokens.color.surface.light,
-                          "&:hover": {
-                            bgcolor: (t) =>
-                              t.palette.mode === "dark"
-                                ? tokens.color.primaryAlpha15
-                                : tokens.color.primaryAlpha10,
-                            borderColor: "primary.main",
-                          },
-                        }}
-                      />
-                    ))}
-                  </Box>
-                </Box>
-              )}
-            </Box>
+                      {term}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
-    </Box>
+    </div>
   );
 }
