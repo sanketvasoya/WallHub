@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Box, Typography, Chip } from "@mui/material";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import {
   ArrowLeft,
   Heart,
@@ -56,23 +56,27 @@ export default function WallpaperClient({ id }: { id: string }) {
     isLoading: fetchingSimilar,
   });
 
+  const favoriteRef = useRef(handleToggleFavorite)
+  const downloadRef = useRef(handleDownload)
+  favoriteRef.current = handleToggleFavorite
+  downloadRef.current = handleDownload
+
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       const target = e.target;
       if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) return;
 
       if (e.key === "Escape") {
-        if (showInfo) setShowInfo(false);
-        else router.back();
+        setShowInfo((s) => { if (s) return false; router.back(); return false; });
         return;
       }
-      if (e.key === "f" || e.key === "F") { e.preventDefault(); handleToggleFavorite(); }
-      if (e.key === "d" || e.key === "D") { e.preventDefault(); handleDownload(); }
+      if (e.key === "f" || e.key === "F") { e.preventDefault(); favoriteRef.current(); }
+      if (e.key === "d" || e.key === "D") { e.preventDefault(); downloadRef.current(); }
       if (e.key === "i" || e.key === "I") { setShowInfo((s) => !s); }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [router, handleToggleFavorite, handleDownload, showInfo]);
+  }, [router]);
 
   const formatDate = (dateStr: string) => {
     try {
@@ -198,20 +202,22 @@ export default function WallpaperClient({ id }: { id: string }) {
         >
           <Box sx={{ position: "relative", width: "100%", maxHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
             {!imageError && (
-              <motion.img
-                layoutId={`wallpaper-image-${wallpaper.id}`}
-                src={wallpaper.image}
-                alt={wallpaper.title || `${wallpaper.width}x${wallpaper.height} wallpaper`}
-                title={wallpaper.title || `Wallpaper ${wallpaper.width}x${wallpaper.height}`}
-                onLoad={() => setImageLoaded(true)}
-                onError={() => setImageError(true)}
-                style={{
-                  maxWidth: "100%",
-                  maxHeight: "80vh",
-                  objectFit: "contain",
-                  borderRadius: tokens.radius.card,
-                }}
-              />
+              <LayoutGroup>
+                <motion.img
+                  layoutId={`wallpaper-image-${wallpaper.id}`}
+                  src={wallpaper.image}
+                  alt={wallpaper.title || `${wallpaper.width}x${wallpaper.height} wallpaper`}
+                  title={wallpaper.title || `Wallpaper ${wallpaper.width}x${wallpaper.height}`}
+                  onLoad={() => setImageLoaded(true)}
+                  onError={() => setImageError(true)}
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: "80vh",
+                    objectFit: "contain",
+                    borderRadius: tokens.radius.card,
+                  }}
+                />
+              </LayoutGroup>
             )}
             {imageError && (
               <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1, color: tokens.color.textSecondary, py: 8 }}>

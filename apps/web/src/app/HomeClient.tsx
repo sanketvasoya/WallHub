@@ -8,6 +8,7 @@ import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 import ErrorState from "@/components/ui/ErrorState";
 import { useFeed } from "@/hooks/useQueries";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import Liquid from "@/components/canvasui/Liquid";
 
 export default function HomeClient() {
   const {
@@ -28,31 +29,23 @@ export default function HomeClient() {
     isLoading: isFetchingNextPage,
   });
 
-  if (isLoading) {
-    return (
-      <Box sx={{ pb: { xs: 10, sm: 4 } }}>
-        <Header />
-        <LoadingSkeleton count={15} />
-        <BottomNav />
-      </Box>
-    );
-  }
-
-  if (isError) {
-    return (
-      <Box sx={{ pb: { xs: 10, sm: 4 } }}>
-        <Header />
-        <ErrorState
-          type="network"
-          message="Couldn't load wallpapers"
-          onRetry={() => refetch()}
-        />
-        <BottomNav />
-      </Box>
-    );
-  }
-
-  return (
+  const content = isLoading ? (
+    <Box sx={{ pb: { xs: 10, sm: 4 } }}>
+      <Header />
+      <LoadingSkeleton count={15} />
+      <BottomNav />
+    </Box>
+  ) : isError ? (
+    <Box sx={{ pb: { xs: 10, sm: 4 } }}>
+      <Header />
+      <ErrorState
+        type="network"
+        message="Couldn't load wallpapers"
+        onRetry={() => refetch()}
+      />
+      <BottomNav />
+    </Box>
+  ) : (
     <Box sx={{ pb: { xs: 10, sm: 4 } }}>
       <Header />
       {wallpapers.length > 0 ? (
@@ -71,5 +64,19 @@ export default function HomeClient() {
       )}
       <BottomNav />
     </Box>
+  );
+
+  return (
+    <Liquid
+      rainbow
+      intensity={0.3}
+      distortion={0.1}
+      blend={2}
+      densityDissipation={0.95}
+      curl={1.5}
+      style={{ minHeight: "100vh" }}
+    >
+      {content}
+    </Liquid>
   );
 }

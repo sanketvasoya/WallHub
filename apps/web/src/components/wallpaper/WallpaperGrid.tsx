@@ -92,10 +92,14 @@ export default function WallpaperGrid({ wallpapers }: WallpaperGridProps) {
 
   if (unique.length === 0) return null;
 
+  if (!width) {
+    return <div ref={containerRef} style={{ width: "100%", height: 0, overflow: "hidden" }} />
+  }
+
   return (
     <div
       ref={containerRef}
-      style={{ position: "relative", width: "100%", height: height || "100vh" }}
+      style={{ position: "relative", width: "100%", height }}
       role="region"
       aria-label="Wallpaper gallery"
     >
