@@ -24,17 +24,18 @@ export default function DownloadsClient() {
     <div style={{ paddingBottom: 80 }}>
       <Header />
       <div style={{ padding: "16px 24px 8px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <div className="animate-fade-in" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{
-              width: 36, height: 36, borderRadius: tokens.radius.button,
-              background: tokens.color.primaryAlpha20, display: "flex",
+              width: 40, height: 40, borderRadius: tokens.radius.button,
+              background: `linear-gradient(135deg, ${tokens.color.primaryAlpha20}, ${tokens.color.primaryAlpha10})`,
+              display: "flex",
               alignItems: "center", justifyContent: "center", color: tokens.color.primary,
             }}>
               <Download size={18} />
             </div>
             <div>
-              <h1 style={{ fontSize: "1.1rem", fontWeight: 700, margin: 0, color: tokens.color.textPrimary }}>
+              <h1 style={{ fontSize: "1.15rem", fontWeight: 800, margin: 0, color: tokens.color.textPrimary, letterSpacing: "-0.02em" }}>
                 Downloads
               </h1>
               {history.length > 0 && (

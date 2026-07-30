@@ -3,16 +3,11 @@
 import { useQuery, useInfiniteQuery, keepPreviousData } from "@tanstack/react-query";
 import {
   fetchFeed,
-  fetchCategories,
-  fetchCategory,
   fetchWallpapers,
   fetchWallpaper,
   fetchSimilarWallpapers,
   fetchWallpapersBatch,
   searchWallpapers,
-  fetchCollections,
-  fetchCollection,
-  fetchHomepage,
 } from "@/lib/api/client";
 
 export function useFeed(ratios?: string, atleast?: string) {
@@ -27,22 +22,6 @@ export function useFeed(ratios?: string, atleast?: string) {
     },
     initialPageParam: 1,
     staleTime: 2 * 60 * 1000,
-  });
-}
-
-export function useCategories() {
-  return useQuery({
-    queryKey: ["categories"],
-    queryFn: fetchCategories,
-    staleTime: 60 * 60 * 1000,
-  });
-}
-
-export function useCategory(slug: string) {
-  return useQuery({
-    queryKey: ["category", slug],
-    queryFn: () => fetchCategory(slug),
-    enabled: !!slug,
   });
 }
 
@@ -91,48 +70,4 @@ export function useSearch(query: string, sort: string = "relevance", ratios?: st
   });
 }
 
-export function useFavoriteWallpapers(ids: string[]) {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["favorites-batch", ids],
-    queryFn: () => fetchWallpapersBatch(ids),
-    enabled: ids.length > 0,
-    staleTime: 60 * 60 * 1000,
-  });
 
-  return {
-    wallpapers: data?.wallpapers ?? [],
-    isLoading,
-    isError,
-  };
-}
-
-export function useCollections() {
-  return useQuery({
-    queryKey: ["collections"],
-    queryFn: fetchCollections,
-    staleTime: 60 * 60 * 1000,
-  });
-}
-
-export function useCollection(slug: string) {
-  return useInfiniteQuery({
-    queryKey: ["collection", slug],
-    queryFn: ({ pageParam = 1 }) => fetchCollection(slug, pageParam),
-    getNextPageParam: (lastPage) => {
-      if (lastPage.page >= 3) return undefined;
-      return lastPage.page + 1;
-    },
-    initialPageParam: 1,
-    enabled: !!slug,
-    staleTime: 5 * 60 * 1000,
-  });
-}
-
-export function useHomepage() {
-  return useQuery({
-    queryKey: ["homepage"],
-    queryFn: fetchHomepage,
-    staleTime: 15 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
-  });
-}

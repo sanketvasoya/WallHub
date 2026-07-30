@@ -35,9 +35,18 @@ export default function LoadingSkeleton({ count = 12, variant = "card" }: Loadin
   }
 
   return (
-    <div className="masonry-grid" role="status" aria-label="Loading wallpapers">
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+        gap: 16,
+        padding: "0 24px",
+      }}
+      role="status"
+      aria-label="Loading wallpapers"
+    >
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="masonry-grid-item">
+        <div key={i}>
           <div
             className="animate-shimmer"
             style={{

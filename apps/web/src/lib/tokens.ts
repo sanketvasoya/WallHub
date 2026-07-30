@@ -26,8 +26,11 @@ export const color = {
   bg: '#0B0B0C',
   surface: '#151518',
   surfaceVariant: '#202024',
+  surfaceElevated: '#1A1A1E',
   primary: '#7C9EFF',
+  primaryLight: '#A8C0FF',
   secondary: '#A78BFA',
+  secondaryLight: '#C4B0FD',
   accent: '#22C55E',
   error: '#EF4444',
   textPrimary: '#F0F0F0',
@@ -39,8 +42,11 @@ export const color = {
   primaryAlpha10: 'rgba(124,158,255,0.10)',
   primaryAlpha20: 'rgba(124,158,255,0.20)',
   primaryAlpha30: 'rgba(124,158,255,0.30)',
+  primaryAlpha50: 'rgba(124,158,255,0.50)',
   errorAlpha10: 'rgba(239,68,68,0.10)',
   errorAlpha20: 'rgba(239,68,68,0.20)',
+  whiteAlpha8: 'rgba(255,255,255,0.08)',
+  whiteAlpha15: 'rgba(255,255,255,0.15)',
 } as const;
 
 export const shadow = {

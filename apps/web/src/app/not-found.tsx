@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link"
 import { tokens } from "@/lib/tokens";
 
 export default function NotFound() {
@@ -23,7 +24,7 @@ export default function NotFound() {
       <p style={{ fontSize: "0.85rem", color: tokens.color.textSecondary, maxWidth: 360, lineHeight: 1.5, margin: 0 }}>
         The page you are looking for does not exist.
       </p>
-      <a
+      <Link
         href="/"
         style={{
           marginTop: 8, padding: "10px 24px", borderRadius: tokens.radius.button,
@@ -33,7 +34,7 @@ export default function NotFound() {
         }}
       >
         Go Home
-      </a>
+      </Link>
     </div>
   );
 }

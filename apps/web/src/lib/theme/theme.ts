@@ -55,10 +55,23 @@ export function getTheme(mode: "light" | "dark") {
             padding: "10px 24px",
             fontWeight: 600,
             fontSize: "0.875rem",
+            transition: "all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1)",
           },
           contained: {
-            "&:hover": { transform: "translateY(-1px)" },
+            boxShadow: "none",
+            "&:hover": {
+              transform: "translateY(-2px)",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+            },
             "&:active": { transform: "translateY(0)" },
+          },
+        },
+      },
+      MuiChip: {
+        styleOverrides: {
+          root: {
+            fontWeight: 500,
+            transition: "all 0.2s ease",
           },
         },
       },

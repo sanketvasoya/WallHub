@@ -7,7 +7,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useSearch } from "@/hooks/useQueries";
 import { useSearchHistoryStore } from "@/lib/stores";
 import { useOrientation } from "@/hooks/useOrientation";
-import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import Header from "@/components/layout/Header";
 import BottomNav from "@/components/layout/BottomNav";
 import WallpaperGrid from "@/components/wallpaper/WallpaperGrid";
@@ -24,8 +23,6 @@ function SearchContent() {
   const inputRef = useRef<HTMLInputElement>(null);
   const { ratios, atleast } = useOrientation();
   const { history, addSearch: addToHistory, clearHistory } = useSearchHistoryStore();
-
-  useKeyboardShortcuts();
 
   const { data, isLoading, isError, refetch } = useSearch(query, "relevance", ratios, atleast);
   const wallpapers = data?.wallpapers ?? [];
@@ -179,7 +176,7 @@ function SearchContent() {
         )}
 
         {hasQuery && (
-          <Box sx={{ mt: 3 }}>
+          <Box sx={{ mt: 3, animation: "fadeInUp 0.4s ease-out forwards" }}>
             {isLoading ? (
               <LoadingSkeleton count={10} />
             ) : isError ? (
@@ -190,7 +187,7 @@ function SearchContent() {
               />
             ) : wallpapers.length > 0 ? (
               <>
-                <Typography variant="body2" sx={{ color: tokens.color.textSecondary, mb: 2, fontSize: "0.8rem" }}>
+                <Typography variant="body2" sx={{ color: tokens.color.textSecondary, mb: 2, fontSize: "0.8rem", fontWeight: 500 }}>
                   {data?.totalResults ?? wallpapers.length} results for &quot;{query}&quot;
                 </Typography>
                 <WallpaperGrid wallpapers={wallpapers} />

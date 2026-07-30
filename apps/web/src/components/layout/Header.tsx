@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Search, Heart, Moon, Sun, Settings as SettingsIcon } from "lucide-react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSettingsStore } from "@/lib/stores";
 import { tokens } from "@/lib/tokens";
@@ -92,7 +93,7 @@ export default function Header() {
           gap: 16,
         }}
       >
-        <a
+        <Link
           href="/"
           style={{
             display: "flex",
@@ -121,19 +122,17 @@ export default function Header() {
           </div>
           <span
             style={{
-              fontWeight: 700,
-              fontSize: "1.1rem",
-              letterSpacing: "-0.02em",
-              background: `linear-gradient(135deg, ${tokens.color.primary}, ${tokens.color.secondary})`,
+              fontWeight: 800,
+              fontSize: "1.15rem",
+              letterSpacing: "-0.03em",
+              background: `linear-gradient(135deg, ${tokens.color.primary}, ${tokens.color.secondaryLight})`,
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
-              display: "none",
             }}
-            className="logo-text"
           >
             WallHub
           </span>
-        </a>
+        </Link>
 
         <div
           style={{
@@ -191,20 +190,30 @@ export default function Header() {
                   display: "flex",
                   alignItems: "center",
                   gap: 8,
-                  height: 52,
+                  height: 48,
                   borderRadius: tokens.radius.pill,
-                  padding: "0 20px",
+                  padding: "0 16px",
                   border: "none",
                   background: tokens.color.surface,
                   color: tokens.color.textSecondary,
                   fontSize: "0.875rem",
                   cursor: "pointer",
-                  minWidth: 240,
+                  minWidth: 48,
+                  width: "100%",
                   boxShadow: tokens.shadow.subtle,
+                  transition: "background 0.2s ease, box-shadow 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = tokens.color.surfaceVariant;
+                  e.currentTarget.style.boxShadow = tokens.shadow.search;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = tokens.color.surface;
+                  e.currentTarget.style.boxShadow = tokens.shadow.subtle;
                 }}
               >
                 <Search size={18} />
-                <span>Search wallpapers</span>
+                <span className="search-label">Search wallpapers</span>
                 <span
                   style={{
                     marginLeft: "auto",
@@ -214,6 +223,7 @@ export default function Header() {
                     fontSize: "0.6875rem",
                     color: tokens.color.textTertiary,
                   }}
+                  className="search-shortcut"
                 >
                   /
                 </span>
@@ -311,11 +321,12 @@ export default function Header() {
 
       <style>{`
         @media (max-width: 768px) {
-          header { height: 64px; padding: 0 16px; }
-          .logo-text { display: none; }
+          header { height: 64px; padding: 0 16px !important; }
+          .search-label { display: none; }
+          .search-shortcut { display: none; }
         }
         @media (max-width: 640px) {
-          header { height: 56px; padding: 0 12px; }
+          header { height: 56px; padding: 0 12px !important; }
         }
       `}</style>
     </header>

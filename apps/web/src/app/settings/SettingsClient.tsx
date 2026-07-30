@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings, Moon, Sun, Monitor, Trash2, Smartphone, Monitor as DesktopIcon, Image } from "lucide-react";
+import { Settings, Moon, Sun, Monitor, Trash2, Smartphone, Monitor as DesktopIcon, Image as ImageIcon } from "lucide-react";
 import Header from "@/components/layout/Header";
 import BottomNav from "@/components/layout/BottomNav";
 import { useSettingsStore, useSearchHistoryStore, useDownloadHistoryStore } from "@/lib/stores";
@@ -35,7 +35,7 @@ export default function SettingsClient() {
   const orientationOptions = [
     { value: "phone", icon: <Smartphone size={16} />, label: "Phone" },
     { value: "desktop", icon: <DesktopIcon size={16} />, label: "Desktop" },
-    { value: "all", icon: <Image size={16} />, label: "All" },
+    { value: "all", icon: <ImageIcon size={16} />, label: "All" },
   ] as const;
 
   const sectionStyle = { marginBottom: 24 };
@@ -57,16 +57,17 @@ export default function SettingsClient() {
       <Header />
 
       <div style={{ padding: "16px 24px 8px", maxWidth: 640, margin: "0 auto" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
+        <div className="animate-fade-in" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
           <div style={{
-            width: 36, height: 36, borderRadius: tokens.radius.button,
-            background: tokens.color.primaryAlpha20, display: "flex",
+            width: 40, height: 40, borderRadius: tokens.radius.button,
+            background: `linear-gradient(135deg, ${tokens.color.primaryAlpha20}, ${tokens.color.primaryAlpha10})`,
+            display: "flex",
             alignItems: "center", justifyContent: "center", color: tokens.color.primary,
           }}>
             <Settings size={18} />
           </div>
           <div>
-            <h1 style={{ fontSize: "1.1rem", fontWeight: 700, margin: 0, color: tokens.color.textPrimary }}>
+            <h1 style={{ fontSize: "1.15rem", fontWeight: 800, margin: 0, color: tokens.color.textPrimary, letterSpacing: "-0.02em" }}>
               Settings
             </h1>
             <span style={{ fontSize: "0.8rem", color: tokens.color.textSecondary }}>

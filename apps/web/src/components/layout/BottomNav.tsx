@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { Home, Heart, Download, Settings } from "lucide-react";
 import { mobileNavItems, isActive } from "@/lib/nav";
+import { tokens } from "@/lib/tokens";
 
 export default function BottomNav() {
   const pathname = usePathname();
@@ -25,7 +26,7 @@ export default function BottomNav() {
         justifyContent: "space-around",
         height: 64,
         paddingBottom: 8,
-        background: "rgba(11,11,12,0.85)",
+        background: "rgba(11,11,12,0.88)",
         backdropFilter: "blur(24px) saturate(1.5)",
         WebkitBackdropFilter: "blur(24px) saturate(1.5)",
         borderTop: "1px solid rgba(255,255,255,0.06)",
@@ -44,20 +45,35 @@ export default function BottomNav() {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 2,
-              padding: "8px 16px",
+              gap: 3,
+              padding: "6px 16px",
               border: "none",
               background: "transparent",
-              color: active ? "#7C9EFF" : "#606060",
+              color: active ? tokens.color.primary : tokens.color.textTertiary,
               cursor: "pointer",
               fontSize: "0.6rem",
               fontWeight: active ? 600 : 500,
               transition: "color 0.2s ease",
               minWidth: 0,
+              position: "relative",
             }}
           >
             <Icon size={22} />
             <span>{item.mobileLabel}</span>
+            {active && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: -1,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: 20,
+                  height: 3,
+                  borderRadius: 2,
+                  background: tokens.color.primary,
+                }}
+              />
+            )}
           </button>
         );
       })}

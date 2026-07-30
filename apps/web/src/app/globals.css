@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
   --bg: #0B0B0C;
@@ -61,6 +61,7 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -69,6 +70,7 @@ body {
   font-family: var(--font-sans);
   background: var(--bg);
   color: var(--text-primary);
+  overscroll-behavior: none;
 }
 
 a {
@@ -106,6 +108,7 @@ img {
 
 ::-webkit-scrollbar {
   width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -115,10 +118,16 @@ img {
 ::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,0.08);
   border-radius: 10px;
+  transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.18);
+}
+
+::selection {
+  background: rgba(124, 158, 255, 0.3);
+  color: #fff;
 }
 
 
@@ -128,19 +137,37 @@ img {
   to { opacity: 1; }
 }
 
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 .animate-fade-in {
   animation: fadeIn 0.3s var(--ease-out) forwards;
 }
 
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s var(--ease-out) forwards;
+}
+
 .animate-shimmer {
   background: linear-gradient(90deg, var(--surface) 25%, var(--surface-variant) 50%, var(--surface) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.animate-pulse {
+  animation: pulse 2s ease-in-out infinite;
 }
 
 *:focus-visible {

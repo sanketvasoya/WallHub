@@ -1,6 +1,6 @@
-import type { Wallpaper as BaseWallpaper, Category as BaseCategory } from "@wallection/types";
+import type { Wallpaper as BaseWallpaper } from "@wallection/types";
 
-export type { WallpapersResponse, SearchResponse, CategoriesResponse, CollectionsResponse, Collection, DownloadHistoryEntry, ApiError } from "@wallection/types";
+export type { WallpapersResponse, SearchResponse, DownloadHistoryEntry } from "@wallection/types";
 
 export type Wallpaper = BaseWallpaper;
 

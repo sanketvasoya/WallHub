@@ -36,20 +36,15 @@ function getPad(w: number): number {
 
 export default function WallpaperGrid({ wallpapers }: WallpaperGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const positionsRef = useRef<Map<string, Pos>>(new Map());
-  const colHeightsRef = useRef<number[]>([]);
-  const colsRef = useRef(5);
-  const gapRef = useRef(20);
-  const padRef = useRef(24);
-  const innerRef = useRef(24);
+  const mapRef = useRef<Map<string, Pos>>(new Map());
 
-  const [containerWidth, setContainerWidth] = useState(0);
+  const [width, setWidth] = useState(0);
 
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
     const ro = new ResizeObserver((entries) => {
-      for (const e of entries) setContainerWidth(e.contentRect.width);
+      for (const e of entries) setWidth(e.contentRect.width);
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -57,84 +52,66 @@ export default function WallpaperGrid({ wallpapers }: WallpaperGridProps) {
 
   const unique = useMemo(() => deduplicateWallpapers(wallpapers), [wallpapers]);
 
-  const height = useMemo(() => {
-    if (unique.length === 0) return 0;
+  const { items, height } = useMemo(() => {
+    if (!width || unique.length === 0) return { items: [], height: 0 };
 
-    const cols = getCols(containerWidth);
-    const gap = getGap(containerWidth);
-    const pad = getPad(containerWidth);
-    const inner = containerWidth - pad * 2;
-    const colW = (inner - gap * (cols - 1)) / cols;
+    const cols = getCols(width);
+    const gap = getGap(width);
+    const pad = getPad(width);
+    const innerWidth = width - pad * 2;
+    const colW = (innerWidth - gap * (cols - 1)) / cols;
+    const colHeights = new Array(cols).fill(0);
+    const result: { wp: Wallpaper; pos: Pos }[] = [];
+    const map = mapRef.current;
 
-    const map = positionsRef.current;
-    const colHs = colHeightsRef.current;
-
-    if (cols !== colsRef.current || gap !== gapRef.current || pad !== padRef.current) {
-      map.clear();
-      colHs.length = 0;
-      colsRef.current = cols;
-      gapRef.current = gap;
-      padRef.current = pad;
-      innerRef.current = inner;
-    }
+    map.clear();
 
     for (const wp of unique) {
-      if (map.has(wp.id)) continue;
-
-      if (colHs.length === 0) {
-        for (let i = 0; i < cols; i++) colHs.push(0);
-      }
-
       const aspect = wp.width / wp.height;
       const itemH = colW / aspect;
-      let colIdx = 0;
-      let minH = colHs[0];
-      for (let i = 1; i < colHs.length; i++) {
-        if (colHs[i] < minH) { minH = colHs[i]; colIdx = i; }
+
+      let minIdx = 0;
+      for (let i = 1; i < colHeights.length; i++) {
+        if (colHeights[i] < colHeights[minIdx]) minIdx = i;
       }
 
-      map.set(wp.id, {
-        x: colIdx * (colW + gap) + pad,
-        y: colHs[colIdx],
+      const pos: Pos = {
+        x: minIdx * (colW + gap) + pad,
+        y: colHeights[minIdx],
         w: colW,
         h: itemH,
-      });
-      colHs[colIdx] += itemH + gap;
+      };
+
+      map.set(wp.id, pos);
+      result.push({ wp, pos });
+      colHeights[minIdx] += itemH + gap;
     }
 
-    const maxH = colHs.length > 0 ? Math.max(...colHs) : 0;
-    return maxH;
-  }, [containerWidth, unique]);
+    return { items: result, height: Math.max(...colHeights, 0) };
+  }, [width, unique]);
 
   if (unique.length === 0) return null;
-
-  const map = positionsRef.current;
 
   return (
     <div
       ref={containerRef}
-      style={{ position: "relative", width: "100%", height, minHeight: "100vh" }}
+      style={{ position: "relative", width: "100%", height: height || "100vh" }}
       role="region"
       aria-label="Wallpaper gallery"
     >
-      {unique.map((wp, i) => {
-        const pos = map.get(wp.id);
-        if (!pos) return null;
-        return (
-          <div
-            key={wp.id}
-            style={{
-              position: "absolute",
-              left: pos.x,
-              top: pos.y,
-              width: pos.w,
-              willChange: "top, left",
-            }}
-          >
-            <WallpaperCard wallpaper={wp} index={i} />
-          </div>
-        );
-      })}
+      {items.map(({ wp, pos }, i) => (
+        <div
+          key={wp.id}
+          style={{
+            position: "absolute",
+            left: pos.x,
+            top: pos.y,
+            width: pos.w,
+          }}
+        >
+          <WallpaperCard wallpaper={wp} index={i} />
+        </div>
+      ))}
     </div>
   );
 }
