@@ -16,9 +16,11 @@ import {
 } from "@/lib/api/client";
 
 export function useFeed(ratios?: string, atleast?: string) {
+  const noRatios = !ratios || ratios === "all"
+  const queryKeyRatios = noRatios ? "all" : ratios
   return useInfiniteQuery({
-    queryKey: ["feed", ratios || "all", atleast || "1920x1080"],
-    queryFn: ({ pageParam = 1 }) => fetchFeed(pageParam, ratios, atleast),
+    queryKey: ["feed", queryKeyRatios, atleast || "1920x1080"],
+    queryFn: ({ pageParam = 1 }) => fetchFeed(pageParam, noRatios ? undefined : ratios, atleast),
     getNextPageParam: (lastPage) => {
       if (lastPage.page >= lastPage.lastPage) return undefined;
       return lastPage.page + 1;

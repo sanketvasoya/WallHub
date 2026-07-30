@@ -143,15 +143,21 @@ export async function getSimilarWallpapers(
     };
   }
 
-  const cacheKey = `similar:${id}:${page}:${limit}:${ratios || "all"}`;
+  const cacheKey = `similar:${id}:${page}:${limit}:${ratios || "all"}:${atleast || "1920x1080"}`;
 
   const cached = await cacheGet<{ wallpapers: Wallpaper[]; page: number; totalResults: number; lastPage: number }>(cacheKey);
   if (cached) return cached;
 
   try {
     const wallpaper = await getWallpaperById(id);
-    const allTags = wallpaper.tags.join(" ");
-    const categories = wallpaper.subreddit === "Anime" ? "010" : "110";
+
+    const genericTags = new Set(["wallpaper", "background", "hd", "4k", "desktop", "mobile", "download", "free", "art", "digital", "cool", "beautiful", "nice", "amazing"])
+    const relevantTags = wallpaper.tags
+      .filter((t) => t.length > 2 && !genericTags.has(t.toLowerCase()))
+      .slice(0, 5)
+    const allTags = relevantTags.length > 0 ? relevantTags.join(" ") : wallpaper.subreddit
+
+    const categories = wallpaper.subreddit === "Anime" ? "010" : "100"
 
     const tagResult = await searchWallhaven({ query: allTags, categories, sorting: "relevance", page, ratios, atleast });
     let candidates = tagResult.data
@@ -160,8 +166,7 @@ export async function getSimilarWallpapers(
     let wallpapers = validateWallpapers(candidates);
 
     if (wallpapers.length < limit) {
-      const categoryQuery = wallpaper.subreddit.toLowerCase();
-      const categoryResult = await searchWallhaven({ query: categoryQuery, categories, sorting: "relevance", page, ratios, atleast });
+      const categoryResult = await searchWallhaven({ query: wallpaper.subreddit.toLowerCase(), categories, sorting: "relevance", page: 1, ratios, atleast });
       const seen = new Set(candidates.map((w) => w.id));
       const extra = categoryResult.data
         .map(transformWallhavenImage)

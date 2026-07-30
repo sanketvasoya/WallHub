@@ -8,10 +8,8 @@ import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 import ErrorState from "@/components/ui/ErrorState";
 import { useFeed } from "@/hooks/useQueries";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
-import { useOrientation } from "@/hooks/useOrientation";
 
 export default function HomeClient() {
-  const { ratios, atleast } = useOrientation();
   const {
     data,
     isLoading,
@@ -20,7 +18,7 @@ export default function HomeClient() {
     hasNextPage,
     isFetchingNextPage,
     refetch,
-  } = useFeed(ratios, atleast);
+  } = useFeed();
 
   const wallpapers = data?.pages.flatMap((p) => p.wallpapers) ?? [];
 
