@@ -154,21 +154,39 @@ export async function getSimilarWallpapers(
     const genericTags = new Set(["wallpaper", "background", "hd", "4k", "desktop", "mobile", "download", "free", "art", "digital", "cool", "beautiful", "nice", "amazing"])
     const relevantTags = wallpaper.tags
       .filter((t) => t.length > 2 && !genericTags.has(t.toLowerCase()))
-      .slice(0, 5)
-    const allTags = relevantTags.length > 0 ? relevantTags.join(" ") : wallpaper.subreddit
+      .slice(0, 10)
+    
+    // Build search query: use relevant tags, fallback to orientation + generic tags
+    let searchQuery = relevantTags.length > 0 
+      ? relevantTags.join(" ")
+      : `${wallpaper.orientation || "landscape"} wallpaper`
+    
+    // Use all categories for better results
+    const categories = "111"
 
-    const categories = wallpaper.subreddit === "Anime" ? "010" : "100"
-
-    const tagResult = await searchWallhaven({ query: allTags, categories, sorting: "relevance", page, ratios, atleast });
+    const tagResult = await searchWallhaven({ query: searchQuery, categories, sorting: "relevance", page, ratios, atleast });
     let candidates = tagResult.data
       .map(transformWallhavenImage)
       .filter((w) => w.id !== id);
     let wallpapers = validateWallpapers(candidates);
 
-    if (wallpapers.length < limit) {
-      const categoryResult = await searchWallhaven({ query: wallpaper.subreddit.toLowerCase(), categories, sorting: "relevance", page: 1, ratios, atleast });
+    // Backfill with color-based search if few results
+    if (wallpapers.length < limit && wallpaper.colors && wallpaper.colors.length > 0) {
+      const colorQuery = wallpaper.colors.slice(0, 2).join(" ")
+      const colorResult = await searchWallhaven({ query: colorQuery, categories, sorting: "relevance", page: 1, ratios, atleast });
       const seen = new Set(candidates.map((w) => w.id));
-      const extra = categoryResult.data
+      const extra = colorResult.data
+        .map(transformWallhavenImage)
+        .filter((w) => w.id !== id && !seen.has(w.id));
+      wallpapers = wallpapers.concat(validateWallpapers(extra));
+    }
+
+    // Final backfill with wallpaper's own tags (including generic)
+    if (wallpapers.length < limit && wallpaper.tags.length > 0) {
+      const fallbackQuery = wallpaper.tags.slice(0, 5).join(" ")
+      const fallbackResult = await searchWallhaven({ query: fallbackQuery, categories, sorting: "relevance", page: 1, ratios, atleast });
+      const seen = new Set(wallpapers.map((w) => w.id));
+      const extra = fallbackResult.data
         .map(transformWallhavenImage)
         .filter((w) => w.id !== id && !seen.has(w.id));
       wallpapers = wallpapers.concat(validateWallpapers(extra));
