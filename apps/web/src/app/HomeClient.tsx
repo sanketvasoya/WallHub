@@ -8,6 +8,7 @@ import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 import ErrorState from "@/components/ui/ErrorState";
 import { useFeed } from "@/hooks/useQueries";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import Liquid from "@/components/canvasui/Liquid";
 import { tokens } from "@/lib/tokens";
 
@@ -29,6 +30,12 @@ export default function HomeClient() {
       await refetch();
     },
     threshold: 80,
+  });
+
+  const { sentinelRef } = useInfiniteScroll({
+    onLoadMore: fetchNextPage,
+    hasMore: !!hasNextPage,
+    isLoading: isFetchingNextPage,
   });
 
   const content = isLoading ? (
@@ -83,7 +90,15 @@ export default function HomeClient() {
       
       <Header />
       {wallpapers.length > 0 ? (
-        <WallpaperGrid wallpapers={wallpapers} />
+        <>
+          <WallpaperGrid wallpapers={wallpapers} />
+          <div ref={sentinelRef} style={{ height: 1 }} />
+          {isFetchingNextPage && (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+              <CircularProgress size={24} sx={{ color: tokens.color.primary }} />
+            </Box>
+          )}
+        </>
       ) : (
         <ErrorState
           type="empty"
