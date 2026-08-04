@@ -1,13 +1,25 @@
 "use client";
 
 import { tokens } from "@/lib/tokens";
+import { useColumnCount } from "@/hooks/useColumnCount";
 
 interface LoadingSkeletonProps {
   count?: number;
   variant?: "card" | "list" | "detail";
 }
 
+// Fixed aspect ratios that mimic real wallpaper distribution
+const ASPECT_RATIOS = [
+  "3 / 4",    // portrait
+  "16 / 9",   // landscape
+  "1 / 1",    // square
+  "4 / 5",    // portrait-ish
+  "21 / 9",   // ultra-wide landscape
+];
+
 export default function LoadingSkeleton({ count = 12, variant = "card" }: LoadingSkeletonProps) {
+  const columnCount = useColumnCount();
+
   if (variant === "detail") {
     return (
       <div style={{ width: "100%", padding: "24px", display: "flex", flexDirection: "column", gap: 16 }}>
@@ -38,25 +50,29 @@ export default function LoadingSkeleton({ count = 12, variant = "card" }: Loadin
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+        gridTemplateColumns: `repeat(${columnCount}, 1fr)`,
         gap: 16,
         padding: "0 24px",
       }}
       role="status"
       aria-label="Loading wallpapers"
     >
-      {Array.from({ length: count }).map((_, i) => (
-        <div key={i}>
-          <div
-            className="animate-shimmer"
-            style={{
-              width: "100%",
-              paddingBottom: `${i % 3 === 0 ? "150%" : i % 3 === 1 ? "120%" : "80%"}`,
-              borderRadius: tokens.radius.card,
-            }}
-          />
-        </div>
-      ))}
+      {Array.from({ length: count }).map((_, i) => {
+        const aspectRatio = ASPECT_RATIOS[i % ASPECT_RATIOS.length];
+        return (
+          <div key={i} style={{ position: "relative" }}>
+            <div
+              className="animate-shimmer"
+              style={{
+                width: "100%",
+                aspectRatio,
+                borderRadius: tokens.radius.card,
+                background: tokens.color.surface,
+              }}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }
