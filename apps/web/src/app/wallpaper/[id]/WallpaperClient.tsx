@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Box, Typography, Chip } from "@mui/material";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import {
@@ -19,6 +19,8 @@ import { useRouter } from "next/navigation";
 import { useWallpaper, useSimilarWallpapers } from "@/hooks/useQueries";
 import { useWallpaperActions } from "@/hooks/useWallpaperActions";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
+import ZoomableView from "@/components/ui/ZoomableView";
 import WallpaperGrid from "@/components/wallpaper/WallpaperGrid";
 import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 import ErrorState from "@/components/ui/ErrorState";
@@ -41,20 +43,60 @@ export default function WallpaperClient({ id }: { id: string }) {
     handleShare,
     handleToggleFavorite,
     downloading,
+    progress,
   } = useWallpaperActions(wallpaper);
 
   const [showInfo, setShowInfo] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [showSwipeHint, setShowSwipeHint] = useState(true);
+  const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
+  const [isZoomed, setIsZoomed] = useState(false);
 
   const similarWallpapers =
     similarData?.pages.flatMap((p) => p.wallpapers) ?? [];
+
+  const currentIndex = useMemo(() => {
+    return similarWallpapers.findIndex((w) => w.id === id);
+  }, [similarWallpapers, id]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: fetchNextSimilar,
     hasMore: !!hasSimilarNext,
     isLoading: fetchingSimilar,
   });
+
+  const handleSwipeLeft = useCallback(() => {
+    if (isZoomed) return;
+    if (currentIndex < 0 || currentIndex >= similarWallpapers.length - 1) {
+      setSwipeDirection("left");
+      setTimeout(() => setSwipeDirection(null), 300);
+      return;
+    }
+    setShowSwipeHint(false);
+    router.push(`/wallpaper/${similarWallpapers[currentIndex + 1].id}`);
+  }, [isZoomed, currentIndex, similarWallpapers, router]);
+
+  const handleSwipeRight = useCallback(() => {
+    if (isZoomed) return;
+    if (currentIndex <= 0) {
+      setSwipeDirection("right");
+      setTimeout(() => setSwipeDirection(null), 300);
+      return;
+    }
+    setShowSwipeHint(false);
+    router.push(`/wallpaper/${similarWallpapers[currentIndex - 1].id}`);
+  }, [isZoomed, currentIndex, similarWallpapers, router]);
+
+  const { onPointerDown, onPointerUp } = useSwipeNavigation({
+    onSwipeLeft: handleSwipeLeft,
+    onSwipeRight: handleSwipeRight,
+    threshold: 80,
+  });
+
+  const handleScaleChange = useCallback((scale: number) => {
+    setIsZoomed(scale > 1);
+  }, []);
 
   const favoriteRef = useRef(handleToggleFavorite)
   const downloadRef = useRef(handleDownload)
@@ -122,10 +164,10 @@ export default function WallpaperClient({ id }: { id: string }) {
             onClick={() => router.back()}
             aria-label="Back"
             style={{
-              width: 40, height: 40, borderRadius: "50%", border: "none",
+              width: 44, height: 44, borderRadius: "50%", border: "none",
               background: "rgba(255,255,255,0.08)", color: "white",
               cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-              backdropFilter: "blur(12px)",
+              backdropFilter: "blur(8px)",
             }}
           >
             <ArrowLeft size={20} />
@@ -140,7 +182,25 @@ export default function WallpaperClient({ id }: { id: string }) {
               },
               {
                 icon: downloading ? (
-                  <Box sx={{ width: 20, height: 20, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "white", animation: "spin 0.6s linear infinite" }} />
+                  <Box sx={{ position: "relative", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {progress > 0 && (
+                      <svg width="20" height="20" viewBox="0 0 20 20" style={{ position: "absolute", top: 0, left: 0 }}>
+                        <circle
+                          cx="10" cy="10" r="9"
+                          fill="none" stroke={tokens.color.primary} strokeWidth="1.5"
+                          strokeDasharray={`${2 * Math.PI * 9}`}
+                          strokeDashoffset={`${2 * Math.PI * 9 * (1 - progress / 100)}`}
+                          transform="rotate(-90 10 10)"
+                          style={{ transition: "stroke-dashoffset 0.3s ease" }}
+                        />
+                      </svg>
+                    )}
+                    {progress === 100 ? (
+                      <Box sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: tokens.color.accent }} />
+                    ) : (
+                      <Box sx={{ width: 8, height: 8, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.3)", borderTopColor: "white", animation: "spin 0.6s linear infinite" }} />
+                    )}
+                  </Box>
                 ) : <Download size={20} />,
                 onClick: handleDownload,
                 disabled: downloading,
@@ -169,11 +229,11 @@ export default function WallpaperClient({ id }: { id: string }) {
                 disabled={btn.disabled}
                 aria-label={btn.label}
                 style={{
-                  width: 40, height: 40, borderRadius: "50%", border: "none",
+                  width: 44, height: 44, borderRadius: "50%", border: "none",
                   background: btn.active ? tokens.color.primaryAlpha20 : "rgba(255,255,255,0.08)",
                   color: btn.active ? tokens.color.primary : "white",
                   cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                  backdropFilter: "blur(12px)", transition: "all 0.2s ease",
+                  backdropFilter: "blur(8px)", transition: "all 0.2s ease",
                   ...(btn.disabled ? { opacity: 0.5 } : {}),
                 }}
                 onMouseEnter={(e) => { if (!btn.disabled) e.currentTarget.style.background = "rgba(255,255,255,0.15)"; }}
@@ -193,6 +253,8 @@ export default function WallpaperClient({ id }: { id: string }) {
           p: { xs: 0, sm: 4 }, pt: { xs: 7, sm: 8 },
           maxWidth: 1200, mx: "auto", width: "100%",
         }}
+        onPointerDown={onPointerDown}
+        onPointerUp={onPointerUp}
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.96 }}
@@ -200,24 +262,26 @@ export default function WallpaperClient({ id }: { id: string }) {
           transition={{ duration: 0.3, ease: tokens.animation.ease }}
           style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}
         >
-          <Box sx={{ position: "relative", width: "100%", maxHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Box sx={{ position: "relative", width: "100%", maxHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center", touchAction: isZoomed ? "none" : "pan-y" }}>
             {!imageError && (
-              <LayoutGroup>
-                <motion.img
-                  layoutId={`wallpaper-image-${wallpaper.id}`}
-                  src={wallpaper.image}
-                  alt={wallpaper.title || `${wallpaper.width}x${wallpaper.height} wallpaper`}
-                  title={wallpaper.title || `Wallpaper ${wallpaper.width}x${wallpaper.height}`}
-                  onLoad={() => setImageLoaded(true)}
-                  onError={() => setImageError(true)}
-                  style={{
-                    maxWidth: "100%",
-                    maxHeight: "80vh",
-                    objectFit: "contain",
-                    borderRadius: tokens.radius.card,
-                  }}
-                />
-              </LayoutGroup>
+              <ZoomableView onScaleChange={handleScaleChange} maxScale={5} minScale={1}>
+                <LayoutGroup>
+                  <motion.img
+                    layoutId={`wallpaper-image-${wallpaper.id}`}
+                    src={wallpaper.image}
+                    alt={wallpaper.title || `${wallpaper.width}x${wallpaper.height} wallpaper`}
+                    title={wallpaper.title || `Wallpaper ${wallpaper.width}x${wallpaper.height}`}
+                    onLoad={() => setImageLoaded(true)}
+                    onError={() => setImageError(true)}
+                    style={{
+                      maxWidth: "100%",
+                      maxHeight: "80vh",
+                      objectFit: "contain",
+                      borderRadius: tokens.radius.card,
+                    }}
+                  />
+                </LayoutGroup>
+              </ZoomableView>
             )}
             {imageError && (
               <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1, color: tokens.color.textSecondary, py: 8 }}>
@@ -233,6 +297,62 @@ export default function WallpaperClient({ id }: { id: string }) {
                 </button>
               </Box>
             )}
+            
+            {/* Swipe hint indicators */}
+            {showSwipeHint && similarWallpapers.length > 1 && (
+              <>
+                {currentIndex > 0 && (
+                  <Box
+                    sx={{
+                      position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)",
+                      width: 32, height: 32, borderRadius: "50%", bgcolor: "rgba(255,255,255,0.1)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      opacity: 0.6, pointerEvents: "none",
+                    }}
+                  >
+                    <ArrowLeft size={16} color="white" />
+                  </Box>
+                )}
+                {currentIndex < similarWallpapers.length - 1 && (
+                  <Box
+                    sx={{
+                      position: "absolute", right: 8, top: "50%", transform: "translateY(-50%) rotate(180deg)",
+                      width: 32, height: 32, borderRadius: "50%", bgcolor: "rgba(255,255,255,0.1)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      opacity: 0.6, pointerEvents: "none",
+                    }}
+                  >
+                    <ArrowLeft size={16} color="white" />
+                  </Box>
+                )}
+              </>
+            )}
+            
+            {/* End of list indicator */}
+            <AnimatePresence>
+              {swipeDirection && (
+                <motion.div
+                  initial={{ opacity: 0, x: swipeDirection === "left" ? -20 : 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  style={{
+                    position: "absolute",
+                    bottom: 16,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    padding: "6px 12px",
+                    borderRadius: 8,
+                    background: "rgba(0,0,0,0.7)",
+                    color: "white",
+                    fontSize: "0.75rem",
+                    pointerEvents: "none",
+                  }}
+                >
+                  {swipeDirection === "left" ? "Last wallpaper" : "First wallpaper"}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </Box>
         </motion.div>
       </Box>
@@ -252,8 +372,8 @@ export default function WallpaperClient({ id }: { id: string }) {
             <Box
               sx={{
                 bgcolor: tokens.color.surface,
-                backdropFilter: "blur(40px) saturate(1.5)",
-                WebkitBackdropFilter: "blur(40px) saturate(1.5)",
+                backdropFilter: "blur(8px) saturate(1.5)",
+                WebkitBackdropFilter: "blur(8px) saturate(1.5)",
                 borderRadius: "28px 28px 0 0",
                 p: 3,
                 maxHeight: "60vh",
@@ -322,10 +442,22 @@ export default function WallpaperClient({ id }: { id: string }) {
                     padding: "10px 24px", borderRadius: tokens.radius.button, border: "none",
                     background: tokens.color.primary, color: "#fff", fontWeight: 600, cursor: "pointer",
                     fontSize: "0.85rem", display: "flex", alignItems: "center", gap: 8,
+                    position: "relative", overflow: "hidden",
                   }}
                 >
-                  <Download size={16} />
-                  {downloading ? "Downloading..." : "Download"}
+                  {downloading && progress > 0 && (
+                    <span
+                      style={{
+                        position: "absolute", bottom: 0, left: 0, height: "100%",
+                        width: `${progress}%`, background: "rgba(255,255,255,0.15)",
+                        transition: "width 0.3s ease",
+                      }}
+                    />
+                  )}
+                  <span style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: 8 }}>
+                    <Download size={16} />
+                    {downloading ? `${progress}%` : "Download"}
+                  </span>
                 </button>
                 <button
                   onClick={() => window.open(wallpaper.originalUrl, "_blank", "noopener,noreferrer")}
