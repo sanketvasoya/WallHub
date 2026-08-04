@@ -22,21 +22,43 @@ function sanitizeFilename(name: string): string {
   return name.replace(/[^a-zA-Z0-9_-]/g, "_");
 }
 
-async function fetchWithRetry(url: string, retries = 1): Promise<Response> {
-  let lastError: Error | undefined;
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return response;
-    } catch (err) {
-      lastError = err instanceof Error ? err : new Error(String(err));
-      if (attempt < retries) {
-        await new Promise((r) => setTimeout(r, 1000));
+export function downloadFile(
+  url: string,
+  filename: string,
+  onProgress?: (progress: number) => void,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+    xhr.responseType = "blob";
+
+    xhr.onprogress = (e) => {
+      if (e.lengthComputable) {
+        onProgress?.(Math.round((e.loaded / e.total) * 100));
       }
-    }
-  }
-  throw lastError;
+    };
+
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        const blob = xhr.response;
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+        onProgress?.(100);
+        resolve();
+      } else {
+        reject(new Error("Download failed"));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error("Network error"));
+    xhr.send();
+  });
 }
 
 export function useWallpaperActions(wallpaper: Wallpaper | null | undefined) {
@@ -46,28 +68,20 @@ export function useWallpaperActions(wallpaper: Wallpaper | null | undefined) {
   );
   const addDownload = useDownloadHistoryStore((s) => s.addDownload);
   const [downloading, setDownloading] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const handleDownload = useCallback(async () => {
     if (!wallpaper) return;
 
     setDownloading(true);
+    setProgress(0);
 
     try {
-      const response = await fetchWithRetry(wallpaper.image);
-
       const ext = extractExtension(wallpaper.image);
       const safeTitle = sanitizeFilename(wallpaper.title || wallpaper.id);
       const filename = `${safeTitle}.${ext}`;
 
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      await downloadFile(wallpaper.image, filename, setProgress);
 
       toast.success("Download complete!");
 
@@ -75,11 +89,15 @@ export function useWallpaperActions(wallpaper: Wallpaper | null | undefined) {
         wallpaperId: wallpaper.id,
         title: wallpaper.title,
         thumbnail: wallpaper.thumbnail,
+        image: wallpaper.image,
         filesize: wallpaper.filesize,
       });
+
+      setTimeout(() => setProgress(0), 2000);
     } catch {
       toast.error("Download failed. Opening in new tab instead.");
       window.open(wallpaper.image, "_blank", "noopener,noreferrer");
+      setProgress(0);
     } finally {
       setDownloading(false);
     }
@@ -116,6 +134,7 @@ export function useWallpaperActions(wallpaper: Wallpaper | null | undefined) {
     handleDownload,
     handleShare,
     handleToggleFavorite,
-    downloading,
+    downloading: downloading || progress > 0,
+    progress,
   };
 }

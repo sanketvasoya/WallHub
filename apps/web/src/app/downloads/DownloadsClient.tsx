@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { Download, Trash2 } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { Download, Trash2, RotateCcw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import BottomNav from "@/components/layout/BottomNav";
@@ -9,16 +9,60 @@ import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 import ErrorState from "@/components/ui/ErrorState";
 import { useDownloadHistoryStore } from "@/lib/stores";
 import { formatRelativeTime } from "@/lib/utils";
+import { downloadFile } from "@/hooks/useWallpaperActions";
 import NextLink from "next/link";
 import { tokens } from "@/lib/tokens";
+import toast from "react-hot-toast";
 
 export default function DownloadsClient() {
   const router = useRouter();
   const { history, loaded, loadHistory, removeDownload, clearHistory } = useDownloadHistoryStore();
+  const [redownloadId, setRedownloadId] = useState<string | null>(null);
+  const [redownloadProgress, setRedownloadProgress] = useState(0);
 
   useEffect(() => {
     loadHistory();
   }, [loadHistory]);
+
+  const handleRedownload = useCallback(
+    async (entry: { id: string; wallpaperId: string; title: string; image?: string }) => {
+      if (!entry.image) {
+        router.push(`/wallpaper/${entry.wallpaperId}`);
+        return;
+      }
+
+      setRedownloadId(entry.id);
+      setRedownloadProgress(0);
+
+      try {
+        const ext = (() => {
+          try {
+            const pathname = new URL(entry.image).pathname;
+            const lastDot = pathname.lastIndexOf(".");
+            if (lastDot === -1) return "jpg";
+            const e = pathname.slice(lastDot + 1).toLowerCase();
+            return e.length > 0 && e.length <= 4 ? e : "jpg";
+          } catch {
+            return "jpg";
+          }
+        })();
+        const safeTitle = entry.title.replace(/[^a-zA-Z0-9_-]/g, "_");
+        const filename = `${safeTitle}.${ext}`;
+
+        await downloadFile(entry.image, filename, setRedownloadProgress);
+        toast.success("Re-download complete!");
+        setTimeout(() => {
+          setRedownloadId(null);
+          setRedownloadProgress(0);
+        }, 2000);
+      } catch {
+        toast.error("Re-download failed.");
+        setRedownloadId(null);
+        setRedownloadProgress(0);
+      }
+    },
+    [router],
+  );
 
   return (
     <div style={{ paddingBottom: 80 }}>
@@ -115,6 +159,42 @@ export default function DownloadsClient() {
                 >
                   <Trash2 size={16} />
                 </button>
+                {entry.image && (
+                  <button
+                    aria-label="Re-download"
+                    onClick={() => handleRedownload(entry)}
+                    disabled={redownloadId === entry.id}
+                    style={{
+                      width: 44, height: 44, borderRadius: "50%", border: "none",
+                      background: redownloadId === entry.id ? tokens.color.primaryAlpha20 : tokens.color.surfaceVariant,
+                      color: tokens.color.primary,
+                      cursor: redownloadId === entry.id ? "default" : "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      transition: "background 0.15s ease",
+                      position: "relative",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (redownloadId !== entry.id) e.currentTarget.style.background = tokens.color.primaryAlpha30;
+                    }}
+                    onMouseLeave={(e) => {
+                      if (redownloadId !== entry.id) e.currentTarget.style.background = tokens.color.surfaceVariant;
+                    }}
+                  >
+                    {redownloadId === entry.id ? (
+                      <svg width="44" height="44" viewBox="0 0 44 44" style={{ position: "absolute", top: 0, left: 0 }}>
+                        <circle
+                          cx="22" cy="22" r="20"
+                          fill="none" stroke={tokens.color.primary} strokeWidth="2"
+                          strokeDasharray={`${2 * Math.PI * 20}`}
+                          strokeDashoffset={`${2 * Math.PI * 20 * (1 - redownloadProgress / 100)}`}
+                          transform="rotate(-90 22 22)"
+                          style={{ transition: "stroke-dashoffset 0.3s ease" }}
+                        />
+                      </svg>
+                    ) : null}
+                    <RotateCcw size={16} style={{ position: "relative", zIndex: 1 }} />
+                  </button>
+                )}
               </div>
             ))}
           </div>

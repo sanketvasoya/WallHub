@@ -14,7 +14,7 @@ import { tokens } from "@/lib/tokens";
 
 export default function FavoritesClient() {
   const router = useRouter();
-  const { wallpapers, count, isLoading, isError } = useFavorites();
+  const { wallpapers, count, isLoading, isError, refetch } = useFavorites();
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredWallpapers = useMemo(() => {
@@ -102,37 +102,19 @@ export default function FavoritesClient() {
       </div>
 
       {isLoading ? (
-        <LoadingSkeleton count={8} />
+        <LoadingSkeleton count={8} variant="list" />
       ) : count === 0 ? (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "80px 24px", gap: 16, textAlign: "center" }}>
-          <div style={{
-            width: 72, height: 72, borderRadius: tokens.radius.card,
-            background: tokens.color.surface, border: `1px solid ${tokens.color.border}`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: tokens.color.textTertiary,
-          }}>
-            <Heart size={36} strokeWidth={1.5} />
-          </div>
-          <div style={{ fontSize: "1rem", fontWeight: 600, color: tokens.color.textPrimary }}>
-            No favorites yet
-          </div>
-          <div style={{ fontSize: "0.85rem", color: tokens.color.textSecondary, maxWidth: 300, lineHeight: 1.5 }}>
-            Tap the heart icon on any wallpaper to save it here
-          </div>
-          <button
-            onClick={() => router.push("/")}
-            style={{
-              padding: "10px 24px", borderRadius: tokens.radius.button,
-              border: "none", background: tokens.color.primary, color: "#fff",
-              fontWeight: 600, cursor: "pointer", fontSize: "0.85rem",
-              marginTop: 8,
-            }}
-          >
-            Browse Wallpapers
-          </button>
-        </div>
+        <ErrorState
+          type="empty"
+          message="No favorites yet"
+          description="Tap the heart icon on any wallpaper to add it to your favorites."
+          action={{ label: "Browse Wallpapers", onClick: () => router.push("/") }}
+        />
       ) : isError ? (
-        <ErrorState message="Failed to load favorites" />
+        <ErrorState
+          message="Failed to load favorites"
+          onRetry={() => refetch()}
+        />
       ) : filteredWallpapers.length === 0 ? (
         <ErrorState type="notFound" message={`No favorites match "${searchQuery}"`} />
       ) : (

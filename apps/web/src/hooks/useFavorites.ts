@@ -9,7 +9,7 @@ export function useFavorites() {
   const toggleFavorite = useFavoritesStore((s) => s.toggleFavorite);
   const isFavorite = useFavoritesStore((s) => s.isFavorite);
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["favorites", favorites],
     queryFn: () => fetchWallpapersBatch(favorites),
     enabled: favorites.length > 0,
@@ -22,6 +22,7 @@ export function useFavorites() {
     count: favorites.length,
     isLoading,
     isError,
+    refetch,
     toggleFavorite,
     isFavorite,
   };

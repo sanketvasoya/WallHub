@@ -19,6 +19,7 @@ export interface Wallpaper {
   colors: string[];
   source: string;
   views: number;
+  blurDataURL?: string;
 }
 
 export interface Category {
@@ -67,6 +68,7 @@ export interface DownloadHistoryEntry {
   wallpaperId: string;
   title: string;
   thumbnail: string;
+  image?: string;
   downloadedAt: string;
   filesize: string;
 }
