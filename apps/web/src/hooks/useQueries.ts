@@ -8,6 +8,7 @@ import {
   fetchSimilarWallpapers,
   fetchWallpapersBatch,
   searchWallpapers,
+  fetchTrendingSearches,
 } from "@/lib/api/client";
 
 export function useFeed(ratios?: string, atleast?: string) {
@@ -62,11 +63,26 @@ export function useSimilarWallpapers(id: string, ratios?: string, atleast?: stri
 }
 
 export function useSearch(query: string, sort: string = "relevance", ratios?: string, atleast?: string) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ["search", query, sort, ratios || "all", atleast || "1920x1080"],
-    queryFn: () => searchWallpapers(query, sort, ratios, atleast),
+    queryFn: ({ pageParam = 1 }) => searchWallpapers(query, sort, pageParam, 20, ratios, atleast),
+    getNextPageParam: (lastPage, allPages) => {
+      const totalLoaded = allPages.reduce((acc, page) => acc + page.wallpapers.length, 0);
+      if (totalLoaded >= lastPage.totalResults) return undefined;
+      return allPages.length + 1;
+    },
+    initialPageParam: 1,
     enabled: query.trim().length > 0,
     staleTime: 3 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useTrendingSearches() {
+  return useQuery({
+    queryKey: ["trending-searches"],
+    queryFn: fetchTrendingSearches,
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
   });
 }
 
