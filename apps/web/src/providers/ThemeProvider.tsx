@@ -35,6 +35,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setResolved(mode);
   }, [mode]);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    if (resolved === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+  }, [resolved]);
+
   const theme = useMemo(() => getTheme(resolved), [resolved]);
 
   return (

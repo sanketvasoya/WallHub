@@ -77,10 +77,10 @@ export default function Header() {
         padding: "0 24px",
         transition: "background 0.3s ease, backdrop-filter 0.3s ease",
         background: scrolled
-          ? "rgba(11,11,12,0.78)"
+          ? "rgba(11,11,12,0.85)"
           : "transparent",
-        backdropFilter: scrolled ? "blur(24px) saturate(1.5)" : "none",
-        WebkitBackdropFilter: scrolled ? "blur(24px) saturate(1.5)" : "none",
+        backdropFilter: scrolled ? "blur(12px) saturate(1.5)" : "none",
+        WebkitBackdropFilter: scrolled ? "blur(12px) saturate(1.5)" : "none",
       } as React.CSSProperties}
     >
       <div
