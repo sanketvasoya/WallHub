@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { Toaster } from "react-hot-toast";
+import { SWRegistration } from "@/components/SWRegistration";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -129,7 +130,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 style: {
                   background: "#151518",
                   color: "#F0F0F0",
-                  backdropFilter: "blur(16px)",
+                  backdropFilter: "blur(8px)",
                   borderRadius: "18px",
                   fontSize: "0.8125rem",
                   fontWeight: 500,
@@ -139,6 +140,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 },
               }}
             />
+            <SWRegistration />
             <main id="main-content">
               {children}
             </main>
